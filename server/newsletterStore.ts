@@ -1,5 +1,7 @@
-import { google } from "googleapis";
-import { getGoogleAuth } from "./googleAuth.js";
+import {
+  listERPNextDocuments,
+  createERPNextDocument,
+} from "./erpnextAuth.js";
 
 let cachedSubscribedEmails: Set<string> | null = null;
 let cachedAtMs = 0;
@@ -13,72 +15,33 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+/**
+ * Load all subscribed emails from ERPNext Subscribers doctype
+ */
 async function loadSubscribedEmails(): Promise<Set<string>> {
-  const spreadsheetId = process.env.NEWSLETTER_RESPONSES_SPREADSHEET_ID;
-  const sheetNameFromEnv = process.env.NEWSLETTER_RESPONSES_SHEET_NAME;
+  try {
+    const result = await listERPNextDocuments("Subscribers", {}, ["email"]);
 
-  if (!spreadsheetId) {
-    throw new Error(
-      "Missing env var NEWSLETTER_RESPONSES_SPREADSHEET_ID (Google Form response sheet id)",
-    );
+    const emails = new Set<string>();
+    if (result.data && Array.isArray(result.data)) {
+      for (const subscriber of result.data) {
+        const email = (subscriber as any)?.email;
+        if (email) {
+          emails.add(normalizeEmail(email));
+        }
+      }
+    }
+
+    return emails;
+  } catch (error) {
+    console.error("Failed to load subscribed emails from ERPNext:", error);
+    throw error;
   }
-
-  const auth = getGoogleAuth();
-  const sheets = google.sheets({ version: "v4", auth });
-
-  let sheetName = sheetNameFromEnv;
-  if (!sheetName) {
-    // If tab name isn't set, automatically use the first tab in the spreadsheet.
-    const metaRes = await sheets.spreadsheets.get({
-      spreadsheetId,
-      fields: "sheets.properties.title",
-    });
-    const firstTitle = (metaRes.data.sheets || [])[0]?.properties?.title;
-    if (!firstTitle) throw new Error("Could not determine response sheet tab name");
-    sheetName = firstTitle;
-  }
-
-  // Read a reasonable column range; most form response sheets are within A:Z.
-  const range = `${sheetName}!A:Z`;
-  const valuesRes = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range,
-  });
-
-  const values = valuesRes.data.values || [];
-  if (values.length === 0) return new Set();
-
-  const headers = (values[0] || []).map((h) => String(h).trim());
-  const emailHeaderEnv = (process.env.NEWSLETTER_EMAIL_COLUMN || "Email")
-    .trim()
-    .toLowerCase();
-
-  let emailColIndex = headers.findIndex(
-    (h) => h.toLowerCase() === emailHeaderEnv,
-  );
-
-  // Fallback: try any header that looks like email.
-  if (emailColIndex === -1) {
-    emailColIndex = headers.findIndex((h) => h.toLowerCase().includes("mail"));
-  }
-
-  if (emailColIndex === -1) {
-    throw new Error(
-      "Could not determine email column in the Google Form responses sheet. Set NEWSLETTER_EMAIL_COLUMN to the exact header name (case-insensitive).",
-    );
-  }
-
-  const emails = new Set<string>();
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i] || [];
-    const raw = row[emailColIndex];
-    if (!raw) continue;
-    emails.add(normalizeEmail(String(raw)));
-  }
-
-  return emails;
 }
 
+/**
+ * Check if an email is subscribed
+ */
 export async function isEmailSubscribed(email: string): Promise<boolean> {
   const normalized = normalizeEmail(email);
   if (!normalized) return false;
@@ -94,89 +57,40 @@ export async function isEmailSubscribed(email: string): Promise<boolean> {
   return emails.has(normalized);
 }
 
+async function subscriberExistsByEmail(normalized: string): Promise<boolean> {
+  const result = await listERPNextDocuments(
+    "Subscribers",
+    { email: normalized },
+    ["name"],
+    { limit: 1 }
+  );
+  return Array.isArray(result.data) && result.data.length > 0;
+}
+
+/**
+ * Subscribe an email to the newsletter
+ */
 export async function subscribeEmailToNewsletter(email: string): Promise<void> {
   const normalized = normalizeEmail(email);
   if (!normalized) return;
 
-  // Avoid writing duplicates.
-  const alreadySubscribed = await isEmailSubscribed(normalized);
-  if (alreadySubscribed) return;
+  try {
+    if (await subscriberExistsByEmail(normalized)) {
+      return;
+    }
 
-  const spreadsheetId = process.env.NEWSLETTER_RESPONSES_SPREADSHEET_ID;
-  const sheetNameFromEnv = process.env.NEWSLETTER_RESPONSES_SHEET_NAME;
-  if (!spreadsheetId) {
-    throw new Error(
-      "Missing env var NEWSLETTER_RESPONSES_SPREADSHEET_ID (Google Form response sheet id)",
-    );
-  }
-
-  const auth = getGoogleAuth();
-  const sheets = google.sheets({ version: "v4", auth });
-
-  let sheetName = sheetNameFromEnv;
-  if (!sheetName) {
-    const metaRes = await sheets.spreadsheets.get({
-      spreadsheetId,
-      fields: "sheets.properties.title",
+    // Create new subscriber
+    await createERPNextDocument("Subscribers", {
+      email: normalized,
+      docstatus: 0,
     });
-    const firstTitle = (metaRes.data.sheets || [])[0]?.properties?.title;
-    if (!firstTitle) throw new Error("Could not determine response sheet tab name");
-    sheetName = firstTitle;
+
+    // Invalidate cache
+    cachedSubscribedEmails = null;
+    cachedAtMs = 0;
+  } catch (error) {
+    console.error("Failed to subscribe email to newsletter:", error);
+    throw error;
   }
-
-  const range = `${sheetName}!A:Z`;
-  const valuesRes = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range,
-  });
-
-  const values = valuesRes.data.values || [];
-  let headers = (values[0] || []).map((h) => String(h).trim());
-
-  // If the tab is empty, initialize it with a default Email header.
-  if (values.length === 0 || headers.length === 0) {
-    headers = [process.env.NEWSLETTER_EMAIL_COLUMN || "Email"];
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `${sheetName}!A1`,
-      valueInputOption: "RAW",
-      requestBody: { values: [headers] },
-    });
-  }
-
-  const emailHeaderEnv = (process.env.NEWSLETTER_EMAIL_COLUMN || "Email")
-    .trim()
-    .toLowerCase();
-
-  let emailColIndex = headers.findIndex(
-    (h) => h.toLowerCase() === emailHeaderEnv,
-  );
-
-  if (emailColIndex === -1) {
-    emailColIndex = headers.findIndex((h) =>
-      h.toLowerCase().includes("mail"),
-    );
-  }
-
-  if (emailColIndex === -1) {
-    throw new Error(
-      "Could not determine email column in the Google Form responses sheet. Set NEWSLETTER_EMAIL_COLUMN to the exact header name (case-insensitive).",
-    );
-  }
-
-  const row = new Array(headers.length).fill("");
-  row[emailColIndex] = normalized;
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: `${sheetName}!A1`,
-    valueInputOption: "RAW",
-    insertDataOption: "INSERT_ROWS",
-    requestBody: { values: [row] },
-  });
-
-  // Invalidate cache so journal preview updates instantly.
-  cachedSubscribedEmails = null;
-  cachedAtMs = 0;
 }
 

@@ -1,0 +1,34 @@
+{
+  "hero": {
+    "title": "Data & Analytics",
+    "subtitle": "Building clarity from complexity, and helping people make better decisions because of it."
+  },
+  "sections": [
+    {
+      "title": "",
+      "text": "I fell into analytics and then fell in love with it.\n\nMy journey into data analytics began in 2017 when I was working as a Research Assistant with PEG Ghana. At the time, I didn't even know data analytics existed as a career path. Near the end of my short contract, a role for an Associate Data Analyst was advertised internally. I was wildly underqualified for it. I barely understood what the role involved, and I certainly did not possess the technical depth it required.\n\nStill, something about the work had already begun to pull me in.\n\nPerhaps it was the curiosity that came with trying to understand patterns. Perhaps it was the satisfaction of bringing order to information that initially seemed disconnected. Whatever it was, I applied for the role anyway.\n\nBy grace, PEG took a chance on me.\n\nThat opportunity became the doorway into a career that has now shaped nearly a decade of my life and work."
+    },
+    {
+      "title": "Growth",
+      "text": "My journey through analytics has been deeply progressive. Over the years, I have had the privilege of working across multiple industries including clean energy, telecommunications, healthcare, and environmental sustainability.\n\nBecause my work has often sat at the intersection of technical execution, operational thinking, and business strategy, I have grown into what I would describe as a multifaceted analyst — someone comfortable moving between systems, people, processes, and decision-making environments.\n\nAcross different organisations, I have worked closely with commercial teams, finance departments, HR units, customer experience teams, operational leadership, credit and refinancing functions, and executive stakeholders. These experiences taught me very early that analytics is never just about data. It is about context, clarity, communication, and ultimately helping organisations make better decisions."
+    },
+    {
+      "title": "Technical Foundation",
+      "text": "My technical skills were built gradually — first through necessity, then through curiosity, and eventually through intentional mastery.\n\nI began with Excel, which remains one of the most powerful business tools when used well. Over time, that foundation expanded into data visualisation and business intelligence tools including Power BI, Tableau, Looker, Apache Superset, and Metabase.\n\nMy work also includes SQL, Python, reporting automation, ETL development, data pipeline design, dashboard architecture, and broader analytics systems thinking. Increasingly, my focus has moved beyond simply producing reports to building scalable reporting ecosystems, governance structures, quality control frameworks, and operational systems that improve how organisations work with data over time.\n\nWhat continues to interest me most is not simply technical capability, but the ability to translate complexity into clarity in ways that are genuinely useful to people."
+    },
+    {
+      "title": "Leadership",
+      "text": "Over the years, I have had the privilege of contributing to organisations such as PEG Ghana, PEG Africa, BLUETOWN, Nyaho Medical Centre, and now Earthworm Foundation.\n\nAt Earthworm Foundation, I currently serve as Global Analytics Lead within the broader Global Data Team, where I lead a growing team of analysts responsible for analytics delivery, reporting systems, and data operations across multiple global programmes and sustainability initiatives.\n\nMy work today sits at the intersection of leadership, systems thinking, operational strategy, stakeholder management, and technical analytics. Increasingly, I find myself spending as much time building people, teams, structures, and processes as I do working directly with data itself."
+    },
+    {
+      "title": "Approach",
+      "text": "At work, and honestly in most areas of life, I am driven by impact.\n\nNot impact as a buzzword, but impact in the practical sense — whether the work we are doing is actually improving decisions, strengthening systems, helping teams function better, or contributing in some meaningful way to the lives of people and communities.\n\nThat perspective has shaped how I approach analytics.\n\nI do not see data as isolated numbers or dashboards. I see it as part of a larger story about people, organisations, systems, and outcomes. The work matters because what is done with the work matters.\n\nFor that reason, I care deeply about clarity, structure, usability, and sustainability — not simply building impressive outputs, but building systems and teams that can endure, adapt, and continue creating value over time.\n\nAcross all of this, my focus remains the same:\n\nTo build systems that create clarity.\nTo lead teams that grow in capability and confidence.\nTo use analytics in ways that genuinely help organisations and people move forward."
+    }
+  ],
+  "signature": [
+    "To build systems that create clarity.",
+    "To lead teams that grow in capability and confidence.",
+    "To use analytics in ways that genuinely help organisations and people move forward."
+  ],
+  "cta": "Let's Talk Data"
+}
