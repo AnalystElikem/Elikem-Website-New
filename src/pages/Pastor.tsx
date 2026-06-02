@@ -99,6 +99,9 @@ export default function Pastor() {
                 fontSize: isMobile ? "14px" : "16px",
                 color: "rgba(255,255,255,0.85)", // 🔥 softened white
                 lineHeight: "1.7",
+                ...(!isMobile
+                  ? { textAlign: "justify" as const, hyphens: "auto" as const }
+                  : {}),
             }}
             >
             {pastorContent.hero.subtitle}
@@ -122,6 +125,7 @@ export default function Pastor() {
                     fontSize: "22px",
                     color: "#4b5a45",
                     marginBottom: "12px",
+                    textAlign: "start",
                   }}
                 >
                   {section.title}
@@ -137,7 +141,9 @@ export default function Pastor() {
                     color: "#5c5c5c",
                     lineHeight: "1.7",
                     marginBottom: "16px",
-                    textAlign: "left",
+                    textAlign: "justify",
+                    hyphens: "auto",
+                    wordBreak: "break-word",
                   }}
                 >
                   {para}
@@ -157,6 +163,9 @@ export default function Pastor() {
                   color: "#5c5c5c",
                   lineHeight: "1.7",
                   marginBottom: "10px",
+                  textAlign: "justify",
+                  hyphens: "auto",
+                  wordBreak: "break-word",
                 }}
               >
                 {line}

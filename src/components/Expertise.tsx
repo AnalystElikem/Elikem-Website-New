@@ -129,6 +129,8 @@ export default function Expertise() {
                 fontWeight: 300,
                 color: "#6f6f6f",
                 lineHeight: "1.7",
+                textAlign: "justify",
+                hyphens: "auto",
               }}
             >
               {item.text}

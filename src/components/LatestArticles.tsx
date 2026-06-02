@@ -269,6 +269,8 @@ export default function LatestArticles() {
                   fontSize: isMobile ? "14px" : "15px",
                   color: "#6f6f6f",
                   lineHeight: "1.6",
+                  textAlign: "justify",
+                  hyphens: "auto",
                 }}
               >
                 {post.excerpt}

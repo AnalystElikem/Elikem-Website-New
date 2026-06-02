@@ -179,6 +179,8 @@ export default function Blog() {
             fontSize: isMobile ? "15px" : "16px",
             lineHeight: 1.65,
             color: "#5c5a54",
+            textAlign: "justify",
+            hyphens: "auto",
           }}
         >
           Longer-form writing on faith, data, and leadership—same voice as the rest of the site,
@@ -311,6 +313,8 @@ export default function Blog() {
                     fontSize: "15px",
                     lineHeight: 1.65,
                     color: "#5c5a54",
+                    textAlign: "justify",
+                    hyphens: "auto",
                   }}
                 >
                   {featuredPost.blog_intro}
@@ -409,6 +413,8 @@ export default function Blog() {
                           WebkitLineClamp: 3,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
+                          textAlign: "justify",
+                          hyphens: "auto",
                         }}
                       >
                         {post.blog_intro}

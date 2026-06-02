@@ -166,7 +166,7 @@ export default function Footer() {
           }}
         >
           <a
-            href="mailto:hello@elikem-aflakpui.com"
+            href="mailto:elikemaflakpui@gmail.com"
             className="link link-underline"
             style={{
               fontFamily: "Inter, sans-serif",
@@ -176,7 +176,7 @@ export default function Footer() {
               textDecoration: "none",
             }}
           >
-            hello@elikem-aflakpui.com
+            elikemaflakpui@gmail.com
           </a>
 
           <div style={{ display: "flex", gap: "20px" }}>

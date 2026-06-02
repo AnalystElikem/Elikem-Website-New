@@ -196,5 +196,23 @@ html {
 .blog-prose td {
   border: 1px solid #e4e1da;
   padding: 0.5rem 0.75rem;
-  text-align: left;
+}
+
+.blog-prose th {
+  text-align: start;
+}
+
+.blog-prose td {
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* Article body: justified prose (headings stay start-aligned) */
+article .blog-content.blog-prose :where(p, li, blockquote) {
+  text-align: justify;
+  hyphens: auto;
+}
+
+article .blog-content.blog-prose :where(h1, h2, h3, h4, h5, h6) {
+  text-align: start;
 }

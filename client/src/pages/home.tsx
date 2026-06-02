@@ -300,11 +300,11 @@ export default function Home() {
 
             {/* Email */}
             <a 
-              href="mailto:hello@elikem-aflakpui.com" 
+              href="mailto:elikemaflakpui@gmail.com" 
               className="group flex items-center gap-3 px-6 py-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-all duration-300"
             >
               <Mail className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-              <span className="text-primary font-medium tracking-wide">hello@elikem-aflakpui.com</span>
+              <span className="text-primary font-medium tracking-wide">elikemaflakpui@gmail.com</span>
             </a>
 
             {/* Social Media Icons */}

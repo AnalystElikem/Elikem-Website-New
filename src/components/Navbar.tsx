@@ -46,8 +46,6 @@ export default function Navbar() {
     { label: "ABOUT", id: "about" },
     { label: "EXPERTISE", id: "expertise" },
     { label: "WRITING", id: "latest-articles" },
-    { label: "BLOG", path: "/blog" },
-    { label: "CONTACT", path: "/contact" },
     { label: "FREE GIFT", id: "newsletter" },
   ];
 
@@ -135,7 +133,7 @@ export default function Navbar() {
               fontSize: "12px",
             }}
           >
-            Book Elikem
+            Contact
           </button>
         </div>
       )}
@@ -207,7 +205,7 @@ export default function Navbar() {
               fontSize: "12px",
             }}
           >
-            Book Elikem
+            Contact
           </button>
         </div>
       )}

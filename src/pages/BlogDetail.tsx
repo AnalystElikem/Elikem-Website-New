@@ -41,22 +41,43 @@ export default function BlogDetail() {
       }
 
       try {
-        const res = await fetch(`/api/blog/${blogName}`);
-        if (!res.ok) throw new Error("Failed to fetch blog post");
-        const data = await res.json();
-        setPost(data.post || null);
+        const res = await fetch(
+          `/api/blog/${encodeURIComponent(blogName)}`,
+        );
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const reason =
+            typeof data?.reason === "string" ? data.reason : "";
+          setError(
+            reason === "blog_post_not_found"
+              ? "This post could not be found."
+              : "Failed to load blog post",
+          );
+          setPost(null);
+          return;
+        }
+        const loaded = data.post as BlogPost | null | undefined;
+        if (!loaded?.name) {
+          setError("This post could not be found.");
+          setPost(null);
+          return;
+        }
+        setPost(loaded);
 
-        const readsRes = await fetch(`/api/blog/${blogName}/reads`);
+        // ERPNext read counts use the document `name`, not the URL slug / route segment.
+        const docName = encodeURIComponent(loaded.name);
+
+        const readsRes = await fetch(`/api/blog/${docName}/reads`);
         if (readsRes.ok) {
           const readsData = await readsRes.json();
           setReads(readsData.reads || 0);
         }
 
-        const sessionKey = `blog_read_${blogName}`;
+        const sessionKey = `blog_read_${loaded.name}`;
         const alreadyRead = sessionStorage.getItem(sessionKey);
 
         if (!alreadyRead) {
-          await fetch(`/api/blog/${blogName}/reads`, { method: "POST" });
+          await fetch(`/api/blog/${docName}/reads`, { method: "POST" });
           sessionStorage.setItem(sessionKey, "true");
         }
       } catch (err) {
@@ -97,6 +118,7 @@ export default function BlogDetail() {
           color: "#1f241c",
           fontWeight: 600,
           lineHeight: 1.2,
+          textAlign: "start",
         }}
         {...props}
       />
@@ -111,6 +133,7 @@ export default function BlogDetail() {
           color: "#1f241c",
           fontWeight: 600,
           lineHeight: 1.25,
+          textAlign: "start",
         }}
         {...props}
       />
@@ -125,6 +148,7 @@ export default function BlogDetail() {
           color: "#1f241c",
           fontWeight: 600,
           lineHeight: 1.3,
+          textAlign: "start",
         }}
         {...props}
       />
@@ -135,6 +159,8 @@ export default function BlogDetail() {
           marginBottom: "1.15rem",
           lineHeight: 1.78,
           color: "#333",
+          textAlign: "justify",
+          hyphens: "auto",
         }}
         {...props}
       />
@@ -167,6 +193,8 @@ export default function BlogDetail() {
           marginBottom: "0.45rem",
           color: "#2a2a2a",
           lineHeight: 1.65,
+          textAlign: "justify",
+          hyphens: "auto",
         }}
         {...props}
       />
@@ -179,6 +207,8 @@ export default function BlogDetail() {
           margin: "1.5rem 0",
           color: "#444",
           fontStyle: "italic",
+          textAlign: "justify",
+          hyphens: "auto",
         }}
         {...props}
       />
@@ -345,6 +375,8 @@ export default function BlogDetail() {
                 color: "#3d3d38",
                 margin: "0 0 28px",
                 fontWeight: 400,
+                textAlign: "justify",
+                hyphens: "auto",
               }}
             >
               {post.blog_intro}
@@ -401,6 +433,7 @@ export default function BlogDetail() {
                 lineHeight: 1.78,
                 color: "#2a2a2a",
                 wordBreak: "break-word",
+                hyphens: "auto",
               }}
             >
               <ReactMarkdown components={mdComponents}>{post.content_md}</ReactMarkdown>

@@ -104,19 +104,56 @@ export async function getBlogCategories(): Promise<string[]> {
   }
 }
 
+function normalizeRoutePath(route: string): string {
+  return route.replace(/^\/+|\/+$/g, "");
+}
+
 /**
- * Get a single blog post by name/slug
+ * Get a single blog post by document name, full public route, or last segment of route
+ * (Frappe often uses `name` as the doc id while `route` is the pretty URL path).
  */
-export async function getBlogPostByRoute(blogName: string): Promise<BlogPost | null> {
+export async function getBlogPostByRoute(blogNameRaw: string): Promise<BlogPost | null> {
   try {
+    let key = blogNameRaw.trim();
+    try {
+      key = decodeURIComponent(key);
+    } catch {
+      /* keep key as-is */
+    }
+    key = key.trim();
+    if (!key) return null;
+
     const allPosts = await getAllBlogPosts();
-    console.log("[Blog Store] Looking for blog name:", blogName);
-    
-    // Simple lookup by blog name
-    const post = allPosts.find((p) => p.name === blogName);
-    
-    console.log("[Blog Store] Found post:", post);
-    return post || null;
+    console.log("[Blog Store] Looking for blog slug:", key);
+
+    const byName = allPosts.find((p) => p.name === key);
+    if (byName) return byName;
+
+    const normKey = normalizeRoutePath(key);
+    const byFullRoute = allPosts.find((p) => {
+      const r = p.route?.trim();
+      if (!r) return false;
+      return normalizeRoutePath(r) === normKey;
+    });
+    if (byFullRoute) return byFullRoute;
+
+    const matchesLast = allPosts.filter((p) => {
+      const parts = normalizeRoutePath(p.route || "")
+        .split("/")
+        .filter(Boolean);
+      return parts.length > 0 && parts[parts.length - 1] === key;
+    });
+    if (matchesLast.length === 1) return matchesLast[0]!;
+    if (matchesLast.length > 1) {
+      console.warn(
+        "[Blog Store] Multiple posts share route last segment; using first match:",
+        key,
+        matchesLast.map((p) => p.name),
+      );
+      return matchesLast[0]!;
+    }
+
+    return null;
   } catch (error) {
     console.error("Failed to get blog post:", error);
     throw error;
