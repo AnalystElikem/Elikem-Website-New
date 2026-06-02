@@ -15,6 +15,7 @@ import {
 } from "./driveStore.js";
 import { getLatestBooksFooterEntry } from "./booksStore.js";
 import { submitFreeGiftSignup } from "./bookGiftStore.js";
+import { submitWebsiteEnquiry } from "./enquiryStore.js";
 import { createBookOrder, getOrders } from "./ordersStore.js";
 import {
   getAllBlogPosts,
@@ -191,6 +192,70 @@ export async function registerRoutes(
         }
         console.error("[books/gift-signup]", err);
         res.status(500).json({ ok: false, reason: "server_error" });
+      }
+    }),
+  );
+
+  router.post(
+    "/enquiry",
+    asyncHandler(async (req: Request, res: Response): Promise<void> => {
+      const name = String(req.body?.name || "").trim();
+      const email = String(req.body?.email || "").trim();
+      const phone = String(req.body?.phone ?? "").trim();
+      const topic = String(req.body?.topic || "general").trim();
+      const message = String(req.body?.message || "").trim();
+
+      if (!name) {
+        res.status(400).json({ ok: false, reason: "missing_name" });
+        return;
+      }
+      if (!message) {
+        res.status(400).json({ ok: false, reason: "missing_feedback" });
+        return;
+      }
+
+      try {
+        const { docName } = await submitWebsiteEnquiry({
+          name,
+          email,
+          phone,
+          topic,
+          message,
+        });
+        res.json({ ok: true, docName });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (
+          msg === "missing_name" ||
+          msg === "missing_contact" ||
+          msg === "invalid_email" ||
+          msg === "missing_feedback" ||
+          msg === "feedback_too_long"
+        ) {
+          res.status(400).json({ ok: false, reason: msg });
+          return;
+        }
+        if (msg === "erpnext_create_no_name") {
+          res.status(502).json({ ok: false, reason: "erpnext_create_failed" });
+          return;
+        }
+        if (msg.startsWith("ERPNext API error")) {
+          console.error("[enquiry]", err);
+          res.status(502).json({ ok: false, reason: "erpnext", detail: msg });
+          return;
+        }
+        if (msg.includes("Missing ERPNext configuration")) {
+          res.status(503).json({ ok: false, reason: "erpnext_not_configured" });
+          return;
+        }
+        console.error("[enquiry]", err);
+        res.status(500).json({
+          ok: false,
+          reason: "server_error",
+          ...(process.env.NODE_ENV !== "production"
+            ? { hint: msg.slice(0, 240) }
+            : {}),
+        });
       }
     }),
   );

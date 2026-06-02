@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -14,9 +15,23 @@ import Analyst from "./pages/Analyst";
 import Writer from "./pages/Writer";
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
+import Contact from "./pages/Contact";
 
 // ✅ HOME PAGE COMPONENT
 function Home() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const id = location.hash.replace(/^#/, "").trim();
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const timer = window.setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [location.hash, location.pathname]);
+
   return (
     <div
       style={{
@@ -62,6 +77,7 @@ export default function App() {
       <Route path="/writing" element={<Writer />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:blogName" element={<BlogDetail />} />
+      <Route path="/contact" element={<Contact />} />
     </Routes>
   );
 }

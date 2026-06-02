@@ -24,10 +24,13 @@ export default function Navbar() {
   }, []);
 
   // ✅ SINGLE CLEAN FUNCTION
-  const goToSection = (id: string, path?: string) => {
+  const goToSection = (id: string | undefined, path?: string) => {
     if (path) {
       navigate(path);
-    } else if (location.pathname !== "/") {
+      return;
+    }
+    if (!id) return;
+    if (location.pathname !== "/") {
       navigate("/");
 
       setTimeout(() => {
@@ -44,6 +47,7 @@ export default function Navbar() {
     { label: "EXPERTISE", id: "expertise" },
     { label: "WRITING", id: "latest-articles" },
     { label: "BLOG", path: "/blog" },
+    { label: "CONTACT", path: "/contact" },
     { label: "FREE GIFT", id: "newsletter" },
   ];
 
@@ -110,7 +114,7 @@ export default function Navbar() {
         >
           {navItems.map((item: any) => (
             <span
-              key={item.id || item.path}
+              key={item.path || item.id}
               className="link link-underline"
               style={{ color: "#2f2f2f", cursor: "pointer" }}
               onClick={() => goToSection(item.id, item.path)}
@@ -120,7 +124,9 @@ export default function Navbar() {
           ))}
 
           <button
+            type="button"
             className="button-primary"
+            onClick={() => navigate("/contact")}
             style={{
               padding: "10px 18px",
               fontWeight: 500,
@@ -169,7 +175,7 @@ export default function Navbar() {
         >
           {navItems.map((item: any) => (
             <span
-              key={item.id || item.path}
+              key={item.path || item.id}
               onClick={() => {
                 goToSection(item.id, item.path);
                 setMenuOpen(false);
@@ -186,7 +192,12 @@ export default function Navbar() {
           ))}
 
           <button
+            type="button"
             className="button-primary"
+            onClick={() => {
+              navigate("/contact");
+              setMenuOpen(false);
+            }}
             style={{
               marginTop: "10px",
               padding: "10px",

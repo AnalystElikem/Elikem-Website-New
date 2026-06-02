@@ -1,9 +1,18 @@
 import useResponsive from "../hooks/useResponsive";
 import heroBg from "../assets/hero-bg.png";
 import { socialLinks } from "../config/social";
+import { useNavigate } from "react-router-dom";
 
 export default function Hero() {
   const { isMobile, isTablet } = useResponsive();
+  const navigate = useNavigate();
+
+  const identityLink = {
+    fontWeight: 500,
+    color: "#777",
+    cursor: "pointer",
+    transition: "color 0.2s ease",
+  } as const;
 
   return (
     <div
@@ -69,7 +78,68 @@ export default function Hero() {
             marginBottom: "10px",
           }}
         >
-          PASTOR • DATA ANALYST • WRITER
+          <span
+            role="link"
+            tabIndex={0}
+            style={identityLink}
+            onClick={() => navigate("/pastor")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigate("/pastor");
+              }
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#4b5a45";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#777";
+            }}
+          >
+            PASTOR
+          </span>
+          <span style={{ margin: "0 6px", cursor: "default" }}>•</span>
+          <span
+            role="link"
+            tabIndex={0}
+            style={identityLink}
+            onClick={() => navigate("/data")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigate("/data");
+              }
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#4b5a45";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#777";
+            }}
+          >
+            DATA ANALYST
+          </span>
+          <span style={{ margin: "0 6px", cursor: "default" }}>•</span>
+          <span
+            role="link"
+            tabIndex={0}
+            style={identityLink}
+            onClick={() => navigate("/writing")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigate("/writing");
+              }
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#4b5a45";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#777";
+            }}
+          >
+            WRITER
+          </span>
         </p>
 
         {/* NAME */}
@@ -162,6 +232,8 @@ export default function Hero() {
 
         {/* CTA */}
         <button
+          type="button"
+          onClick={() => navigate("/contact")}
           style={{
             background: "#4b5a45",
             color: "white",

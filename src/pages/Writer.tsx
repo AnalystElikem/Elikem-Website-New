@@ -167,6 +167,13 @@ export default function Writer() {
           {/* 🔥 CTA */}
           <div style={{ marginTop: "40px" }}>
             <button
+              type="button"
+              onClick={() =>
+                navigate({
+                  pathname: "/contact",
+                  state: { enquiryTopic: "writer" },
+                })
+              }
               style={{
                 background: "#4b5a45",
                 border: "none",
@@ -192,6 +199,28 @@ export default function Writer() {
 
           {/* 🔥 EXPLORE OTHER ROLES */}
           <div style={{ marginTop: "60px", paddingTop: "40px", borderTop: "1px solid #e0dcd2" }}>
+            <button
+              type="button"
+              onClick={() => navigate({ pathname: "/", hash: "expertise-writer" })}
+              style={{
+                display: "block",
+                width: "100%",
+                maxWidth: "420px",
+                margin: "0 auto 24px",
+                background: "transparent",
+                border: "none",
+                padding: "8px 0",
+                fontFamily: "Inter, sans-serif",
+                fontSize: isMobile ? "13px" : "14px",
+                color: "#4b5a45",
+                cursor: "pointer",
+                textDecoration: "underline",
+                textUnderlineOffset: "4px",
+                letterSpacing: "0.3px",
+              }}
+            >
+              ← Back to Writer on the homepage
+            </button>
             <p
               style={{
                 fontFamily: "Inter, sans-serif",

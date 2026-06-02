@@ -37,6 +37,14 @@ This application requires the following ERPNext doctypes to be set up:
 3. **Book Order** - Stores book order information
    - Fields: `email` (Email), `customer_name` (Text), `book_title` (Text), `quantity` (Int), `delivery_address` (Text), `phone` (Text), `order_date` (Datetime)
 
+4. **Feedback** (DocType name may be `Feedback`) — contact / feedback from the site
+   - Fields (default API names; match **Customize Form** or override with env):
+     - `name__organization` — Name / Organization (Frappe `__` when the label contains `/`; override with `ERPNEXT_FEEDBACK_NAME_ORG_FIELD`)
+     - `email` — Email (optional if phone is sent)
+     - `phone_number` — Phone Number (`ERPNEXT_FEEDBACK_PHONE_FIELD`, default `phone_number`)
+     - `feedback_type` — Feedback Type (Select); option text must match what the site sends (see `TOPICS` labels in `EnquiryForm.tsx`)
+     - `feedback` — body text (“What do you want us to know?”)
+
 
 ## API Endpoints
 
@@ -161,6 +169,47 @@ Response:
   "message": "Order placed successfully"
 }
 ```
+
+### Website feedback (ERPNext Feedback)
+
+The contact form is served at **`/contact`** in the site (not on the home page).
+
+#### Submit feedback / enquiry
+```
+POST /api/enquiry
+Content-Type: application/json
+
+{
+  "name": "Jane Doe or Org name",
+  "email": "jane@example.com",
+  "phone": "+233 …",
+  "topic": "general",
+  "message": "What you want us to know."
+}
+```
+
+**At least one** of `email` or `phone` must be non-empty. If `email` is set, it must be valid. `message` (mapped to the **Feedback** field in ERPNext) is required.
+
+`topic` is one of: `general`, `pastor`, `data-analyst`, `writer`. It is stored in **Feedback Type** as the display label (e.g. `General`, `Pastoral / spiritual`). Those labels must exist as **Select** options on your Feedback DocType, or change the labels in `src/components/EnquiryForm.tsx` to match ERPNext.
+
+**Response**
+```json
+{ "ok": true, "docName": "CRM-FEEDBACK-2026-00001" }
+```
+
+**Optional env (field / doctype overrides)**
+
+```env
+ERPNEXT_FEEDBACK_DOCTYPE=Feedback
+ERPNEXT_FEEDBACK_EMAIL_FIELD=email
+ERPNEXT_FEEDBACK_PHONE_FIELD=phone_number
+ERPNEXT_FEEDBACK_TYPE_FIELD=feedback_type
+ERPNEXT_FEEDBACK_NAME_ORG_FIELD=name__organization
+ERPNEXT_FEEDBACK_BODY_FIELD=feedback
+ERPNEXT_FEEDBACK_NAMING_SERIES=
+```
+
+If your field API names differ (e.g. Frappe generated `name__organization`), set the matching `ERPNEXT_FEEDBACK_*` variable.
 
 #### Get User's Book Orders (Requires Token)
 ```
