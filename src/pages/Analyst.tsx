@@ -169,8 +169,7 @@ export default function Analyst() {
             <button
               type="button"
               onClick={() =>
-                navigate({
-                  pathname: "/contact",
+                navigate("/contact", {
                   state: { enquiryTopic: "data-analyst" },
                 })
               }

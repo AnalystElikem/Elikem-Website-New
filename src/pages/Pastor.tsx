@@ -169,8 +169,7 @@ export default function Pastor() {
             <button
               type="button"
               onClick={() =>
-                navigate({
-                  pathname: "/contact",
+                navigate("/contact", {
                   state: { enquiryTopic: "pastor" },
                 })
               }

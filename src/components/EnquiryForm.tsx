@@ -17,7 +17,7 @@ function isTopicValue(v: string): v is TopicValue {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const inputStyle = (isMobile: boolean): React.CSSProperties => ({
+const inputStyle = (): React.CSSProperties => ({
   width: "100%",
   padding: "14px 16px",
   border: "1px solid #d6d2c8",
@@ -278,7 +278,7 @@ export default function EnquiryForm() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              style={inputStyle(isMobile)}
+              style={inputStyle()}
             />
           </div>
 
@@ -303,7 +303,7 @@ export default function EnquiryForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                style={inputStyle(isMobile)}
+                style={inputStyle()}
                 aria-label="Email (optional if phone provided)"
               />
             </div>
@@ -319,7 +319,7 @@ export default function EnquiryForm() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+233 …"
-                style={inputStyle(isMobile)}
+                style={inputStyle()}
                 aria-label="Phone number (optional if email provided)"
               />
             </div>
@@ -344,7 +344,7 @@ export default function EnquiryForm() {
                 if (isTopicValue(v)) setTopic(v);
               }}
               style={{
-                ...inputStyle(isMobile),
+                ...inputStyle(),
                 cursor: "pointer",
               }}
             >
@@ -371,7 +371,7 @@ export default function EnquiryForm() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Your question, idea, or context…"
               style={{
-                ...inputStyle(isMobile),
+                ...inputStyle(),
                 resize: "vertical",
                 minHeight: "160px",
                 lineHeight: 1.65,

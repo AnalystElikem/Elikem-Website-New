@@ -169,8 +169,7 @@ export default function Writer() {
             <button
               type="button"
               onClick={() =>
-                navigate({
-                  pathname: "/contact",
+                navigate("/contact", {
                   state: { enquiryTopic: "writer" },
                 })
               }
