@@ -581,6 +581,12 @@ article .blog-content.blog-body-erpnext .ql-editor {
   min-height: 0;
   overflow-y: visible;
   cursor: default;
+  font-weight: 350;
+}
+
+article .blog-content.blog-body-erpnext .ql-editor strong,
+article .blog-content.blog-body-erpnext .ql-editor b {
+  font-weight: 600;
 }
 
 article .blog-content.blog-body-erpnext .ql-editor > * {
