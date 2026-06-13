@@ -53,7 +53,7 @@ export default function About() {
                 <a href="#" className="hover:text-primary transition-colors"><Linkedin className="h-5 w-5" /></a>
                 <a href="#" className="hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></a>
                 <a href="#" className="hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></a>
-                <a href="mailto:elikemaflakpui@gmail.com" className="hover:text-primary transition-colors"><Mail className="h-5 w-5" /></a>
+                <a href="mailto:hello@elikemaflakpui.com" className="hover:text-primary transition-colors"><Mail className="h-5 w-5" /></a>
               </motion.div>
             </div>
 
