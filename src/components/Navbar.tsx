@@ -7,6 +7,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 /** Hide the bar again after this long with no scroll / touch / pointer activity */
 const IDLE_HIDE_MS = 3200;
+/** Treat as “top of page” so the header stays visible (iOS rubber-band, sub-pixel) */
+const TOP_THRESHOLD_PX = 12;
+
+function isAtDocumentTop(): boolean {
+  if (typeof window === "undefined") return true;
+  return window.scrollY < TOP_THRESHOLD_PX;
+}
 
 export default function Navbar() {
   const { isMobile } = useResponsive();
@@ -19,10 +26,11 @@ export default function Navbar() {
   const [currentLogo, setCurrentLogo] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   /** Bar is tucked away until the user scrolls or touches; then it auto-hides after idle */
-  const [barVisible, setBarVisible] = useState(false);
+  const [barVisible, setBarVisible] = useState(() => isAtDocumentTop());
 
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuOpenRef = useRef(menuOpen);
+  const atScrollTopRef = useRef(isAtDocumentTop());
   menuOpenRef.current = menuOpen;
 
   const clearHideTimer = useCallback(() => {
@@ -35,6 +43,7 @@ export default function Navbar() {
   const scheduleHide = useCallback(() => {
     clearHideTimer();
     if (menuOpenRef.current) return;
+    if (atScrollTopRef.current) return;
     hideTimerRef.current = window.setTimeout(() => {
       setBarVisible(false);
       setMenuOpen(false);
@@ -49,31 +58,41 @@ export default function Navbar() {
     }
   }, [scheduleHide]);
 
+  const syncScrollTopAndBar = useCallback(() => {
+    atScrollTopRef.current = isAtDocumentTop();
+    if (atScrollTopRef.current) {
+      setBarVisible(true);
+      clearHideTimer();
+    } else {
+      wake();
+    }
+  }, [wake, clearHideTimer]);
+
   useEffect(() => {
-    setBarVisible(false);
     setMenuOpen(false);
     clearHideTimer();
+    atScrollTopRef.current = isAtDocumentTop();
+    setBarVisible(atScrollTopRef.current);
   }, [location.pathname, clearHideTimer]);
 
   useEffect(() => {
     const passive = { passive: true } as const;
-    const onActivity = () => wake();
 
-    window.addEventListener("scroll", onActivity, passive);
-    document.addEventListener("touchstart", onActivity, passive);
-    document.addEventListener("touchmove", onActivity, passive);
-    document.addEventListener("wheel", onActivity, passive);
-    document.addEventListener("pointerdown", onActivity, passive);
+    window.addEventListener("scroll", syncScrollTopAndBar, passive);
+    document.addEventListener("touchstart", syncScrollTopAndBar, passive);
+    document.addEventListener("touchmove", syncScrollTopAndBar, passive);
+    document.addEventListener("wheel", syncScrollTopAndBar, passive);
+    document.addEventListener("pointerdown", syncScrollTopAndBar, passive);
 
     return () => {
-      window.removeEventListener("scroll", onActivity);
-      document.removeEventListener("touchstart", onActivity);
-      document.removeEventListener("touchmove", onActivity);
-      document.removeEventListener("wheel", onActivity);
-      document.removeEventListener("pointerdown", onActivity);
+      window.removeEventListener("scroll", syncScrollTopAndBar);
+      document.removeEventListener("touchstart", syncScrollTopAndBar);
+      document.removeEventListener("touchmove", syncScrollTopAndBar);
+      document.removeEventListener("wheel", syncScrollTopAndBar);
+      document.removeEventListener("pointerdown", syncScrollTopAndBar);
       clearHideTimer();
     };
-  }, [wake, clearHideTimer]);
+  }, [syncScrollTopAndBar, clearHideTimer]);
 
   useEffect(() => {
     if (menuOpen) {

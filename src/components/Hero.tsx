@@ -23,7 +23,7 @@ export default function Hero() {
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        paddingTop: isMobile ? "90px" : "100px",
+        paddingTop: isMobile ? "124px" : "100px",
         paddingBottom: isMobile ? "90px" : "100px",
         paddingLeft: "20px",
         paddingRight: "20px",
