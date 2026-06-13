@@ -21,6 +21,17 @@ import BooksPreorder from "./pages/BooksPreorder";
 import Contact from "./pages/Contact";
 import RotatingFavicon from "./components/RotatingFavicon";
 
+/** Reset window scroll on real route changes (SPA default leaves scroll position). */
+function ScrollToTop() {
+  const { pathname, search } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname, search]);
+
+  return null;
+}
+
 // ✅ HOME PAGE COMPONENT
 function Home() {
   const location = useLocation();
@@ -75,6 +86,7 @@ function Home() {
 export default function App() {
   return (
     <>
+      <ScrollToTop />
       <RotatingFavicon />
       <Routes>
         <Route path="/" element={<Home />} />
