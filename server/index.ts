@@ -86,6 +86,16 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
+  httpServer.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(
+        `[express] Port ${port} is already in use (another dev server or app). Close that terminal/process, or start with a different port, e.g. PORT=5001 npm run dev (PowerShell: $env:PORT=5001; npm run dev).`,
+      );
+    } else {
+      console.error(err);
+    }
+    process.exit(1);
+  });
   httpServer.listen(
     {
       port,

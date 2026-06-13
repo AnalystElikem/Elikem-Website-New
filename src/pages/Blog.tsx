@@ -172,7 +172,7 @@ export default function Blog() {
             letterSpacing: "-0.02em",
           }}
         >
-          Essays &amp; notes
+          Essays &amp; Notes
         </h1>
         <p
           style={{
@@ -185,7 +185,7 @@ export default function Blog() {
             hyphens: "auto",
           }}
         >
-          Longer-form writing on faith, data, and leadership—same voice as the rest of the site,
+          Longer-form writing on faith, data, and leadership— as the rest of the site,
           in one place.
         </p>
       </header>

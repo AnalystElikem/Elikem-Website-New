@@ -214,8 +214,8 @@ export default function BlogDetail() {
             style={{
               fontFamily: '"Playfair Display", serif',
               fontWeight: 400,
-              fontSize: isMobile ? "32px" : "42px",
-              lineHeight: 1.18,
+              fontSize: isMobile ? "20px" : "30px",
+              lineHeight: 1.00,
               color: ink,
               margin: "0 0 20px",
               letterSpacing: "-0.02em",
