@@ -46,7 +46,7 @@ This application requires the following ERPNext doctypes to be set up:
 4. **Book Order** - Stores book order information
    - Fields: `email` (Email), `customer_name` (Text), `book_title` (Text), `quantity` (Int), `delivery_address` (Text), `phone` (Text), `order_date` (Datetime)
 
-5. **Pre-Order** — rows created from the site pre-order form (`POST /api/books/preorder`). Doctype name override: **`ERPNEXT_PREORDER_DOCTYPE`** (default `Pre-Order`). Default field API names: **`book`** (Link to **Books** document name), **`email`**. Override with **`ERPNEXT_PREORDER_BOOK_FIELD`** / **`ERPNEXT_PREORDER_EMAIL_FIELD`**. Optional **`ERPNEXT_PREORDER_NAMING_SERIES`**.
+5. **Pre-Order** — rows created from the site pre-order form (`POST /api/books/preorder`). Doctype name override: **`ERPNEXT_PREORDER_DOCTYPE`** (default `Pre-Order`). Default field API names: **`book`** (Link to **Books** document name), **`email`**, **`full_name`**, **`quantity`** (integer 1–999). Override with **`ERPNEXT_PREORDER_BOOK_FIELD`**, **`ERPNEXT_PREORDER_EMAIL_FIELD`**, **`ERPNEXT_PREORDER_FULL_NAME_FIELD`**, **`ERPNEXT_PREORDER_QUANTITY_FIELD`**. Optional **`ERPNEXT_PREORDER_NAMING_SERIES`**.
 
 6. **Feedback** (DocType name may be `Feedback`) — contact / feedback from the site
    - Fields (default API names; match **Customize Form** or override with env):
@@ -190,7 +190,9 @@ Content-Type: application/json
 
 {
   "book": "BOOKS-00001",
-  "email": "reader@example.com"
+  "email": "reader@example.com",
+  "full_name": "Jane Reader",
+  "quantity": 2
 }
 
 Response:
@@ -200,7 +202,7 @@ Response:
 }
 ```
 
-Error JSON examples: `{ "ok": false, "reason": "not_preorder" }`, `{ "ok": false, "reason": "book_not_found" }`, `{ "ok": false, "reason": "invalid_email" }`.
+Error JSON examples: `{ "ok": false, "reason": "not_preorder" }`, `{ "ok": false, "reason": "book_not_found" }`, `{ "ok": false, "reason": "invalid_email" }`, `{ "ok": false, "reason": "missing_full_name" }`, `{ "ok": false, "reason": "invalid_quantity" }`.
 
 #### List Recent Book Previews (Public)
 ```
@@ -409,6 +411,8 @@ Created when a visitor submits **`POST /api/books/preorder`** from the **Books**
 - Fields (defaults; override with env):
   - **`book`** — Link to **Books** (stores the Books document `name`; override **`ERPNEXT_PREORDER_BOOK_FIELD`**)
   - **`email`** — Email (override **`ERPNEXT_PREORDER_EMAIL_FIELD`**)
+  - **`full_name`** — Customer name (override **`ERPNEXT_PREORDER_FULL_NAME_FIELD`**)
+  - **`quantity`** — Int 1–999 (override **`ERPNEXT_PREORDER_QUANTITY_FIELD`**)
 - If the doctype uses **Naming Series**, set **`ERPNEXT_PREORDER_NAMING_SERIES`** (e.g. `PRE-.#####`).
 - Inserts use **`?ignore_permissions=1`** unless **`ERPNEXT_PREORDER_RESPECT_PERMISSIONS=1`**.
 

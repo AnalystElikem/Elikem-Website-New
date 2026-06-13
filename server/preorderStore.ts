@@ -7,12 +7,20 @@ import { makeERPNextRequest } from "./erpnextAuth.js";
  * - `ERPNEXT_PREORDER_DOCTYPE` (default `Pre-Order`)
  * - `ERPNEXT_PREORDER_BOOK_FIELD` — Link / Data field for Books doc name (default `book`)
  * - `ERPNEXT_PREORDER_EMAIL_FIELD` (default `email`)
+ * - `ERPNEXT_PREORDER_FULL_NAME_FIELD` (default `full_name`)
+ * - `ERPNEXT_PREORDER_QUANTITY_FIELD` (default `quantity`) — Int / numeric in ERPNext
  * - `ERPNEXT_PREORDER_NAMING_SERIES` — if your doctype uses naming series
  * - `ERPNEXT_PREORDER_RESPECT_PERMISSIONS=1` — omit `ignore_permissions` on POST
  */
 const DOCTYPE = (process.env.ERPNEXT_PREORDER_DOCTYPE || "Pre-Order").trim();
 const FIELD_BOOK = (process.env.ERPNEXT_PREORDER_BOOK_FIELD || "book").trim();
 const FIELD_EMAIL = (process.env.ERPNEXT_PREORDER_EMAIL_FIELD || "email").trim();
+const FIELD_FULL_NAME = (
+  process.env.ERPNEXT_PREORDER_FULL_NAME_FIELD || "full_name"
+).trim();
+const FIELD_QUANTITY = (
+  process.env.ERPNEXT_PREORDER_QUANTITY_FIELD || "quantity"
+).trim();
 const NAMING_SERIES = process.env.ERPNEXT_PREORDER_NAMING_SERIES?.trim();
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,21 +40,45 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+const FULL_NAME_MAX = 200;
+const QTY_MIN = 1;
+const QTY_MAX = 999;
+
 export async function submitBookPreorder(
   booksDocName: string,
-  emailRaw: string
+  emailRaw: string,
+  fullNameRaw: string,
+  quantityRaw: unknown
 ): Promise<{ docName: string }> {
   const book = booksDocName.trim();
   const email = normalizeEmail(emailRaw);
+  const fullName = fullNameRaw.trim().replace(/\s+/g, " ");
 
   if (!book) throw new Error("missing_book");
   if (!email) throw new Error("missing_email");
   if (!EMAIL_RE.test(email)) throw new Error("invalid_email");
+  if (!fullName) throw new Error("missing_full_name");
+  if (fullName.length > FULL_NAME_MAX) throw new Error("full_name_too_long");
+
+  let quantity = NaN;
+  if (typeof quantityRaw === "number" && Number.isFinite(quantityRaw)) {
+    quantity = Math.trunc(quantityRaw);
+  } else if (typeof quantityRaw === "string" && quantityRaw.trim() !== "") {
+    quantity = Math.trunc(Number.parseInt(quantityRaw.trim(), 10));
+  } else if (quantityRaw != null && quantityRaw !== "") {
+    const s = String(quantityRaw).trim();
+    if (s) quantity = Math.trunc(Number.parseInt(s, 10));
+  }
+  if (!Number.isFinite(quantity) || quantity < QTY_MIN || quantity > QTY_MAX) {
+    throw new Error("invalid_quantity");
+  }
 
   const body: Record<string, unknown> = {
     docstatus: 0,
     [FIELD_BOOK]: book,
     [FIELD_EMAIL]: email,
+    [FIELD_FULL_NAME]: fullName,
+    [FIELD_QUANTITY]: quantity,
   };
 
   if (NAMING_SERIES) {

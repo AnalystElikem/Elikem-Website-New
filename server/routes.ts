@@ -213,12 +213,21 @@ export async function registerRoutes(
     asyncHandler(async (req: Request, res: Response): Promise<void> => {
       const book = String(req.body?.book || "").trim();
       const email = String(req.body?.email || "").trim();
+      const fullName = String(
+        req.body?.full_name ?? req.body?.fullName ?? ""
+      ).trim();
+      const quantity =
+        req.body?.quantity ?? req.body?.qty ?? req.body?.qty_ordered;
       if (!book) {
         res.status(400).json({ ok: false, reason: "missing_book" });
         return;
       }
       if (!email) {
         res.status(400).json({ ok: false, reason: "missing_email" });
+        return;
+      }
+      if (!fullName) {
+        res.status(400).json({ ok: false, reason: "missing_full_name" });
         return;
       }
 
@@ -233,12 +242,24 @@ export async function registerRoutes(
       }
 
       try {
-        const { docName } = await submitBookPreorder(book, email);
+        const { docName } = await submitBookPreorder(book, email, fullName, quantity);
         res.json({ ok: true, docName });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         if (msg === "missing_book" || msg === "missing_email") {
           res.status(400).json({ ok: false, reason: msg });
+          return;
+        }
+        if (msg === "missing_full_name") {
+          res.status(400).json({ ok: false, reason: "missing_full_name" });
+          return;
+        }
+        if (msg === "full_name_too_long") {
+          res.status(400).json({ ok: false, reason: "full_name_too_long" });
+          return;
+        }
+        if (msg === "invalid_quantity") {
+          res.status(400).json({ ok: false, reason: "invalid_quantity" });
           return;
         }
         if (msg === "invalid_email") {
