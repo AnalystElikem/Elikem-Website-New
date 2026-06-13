@@ -1,5 +1,4 @@
 import useResponsive from "../hooks/useResponsive";
-import { useNavigate } from "react-router-dom";
 
 // ✅ IMPORT IMAGES
 import pastorIcon from "../assets/ea-pastor-icon.png";
@@ -8,28 +7,24 @@ import writerIcon from "../assets/ea-writer-icon.png";
 
 export default function Expertise() {
   const { isMobile } = useResponsive();
-  const navigate = useNavigate();
 
   const items = [
     {
       title: "Pastor",
       text: "Spiritual guidance and community leadership focused on heart-centered service and faith.",
       icon: pastorIcon,
-      path: "/pastor",
       sectionId: "expertise-pastor",
     },
     {
       title: "Data Analyst",
       text: "Leveraging analytical insights to drive strategic decisions and professional excellence.",
       icon: analystIcon,
-      path: "/data",
       sectionId: "expertise-data-analyst",
     },
     {
       title: "Writer",
       text: "Crafting narratives that inspire change, distill truth, and leave a lasting legacy.",
       icon: writerIcon,
-      path: "/writing",
       sectionId: "expertise-writer",
     },
   ] as const;
@@ -75,19 +70,15 @@ export default function Expertise() {
         }}
       >
         {items.map((item) => (
-          <button
+          <div
             key={item.title}
-            type="button"
             id={item.sectionId}
-            onClick={() => navigate(item.path)}
             style={{
               background: "#ffffff",
               padding: isMobile ? "30px 20px" : "40px 30px",
               borderRadius: "6px",
               border: "1px solid transparent",
-              cursor: "pointer",
               textAlign: "center",
-              font: "inherit",
               transition: "box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease",
             }}
             onMouseEnter={(e) => {
@@ -129,13 +120,12 @@ export default function Expertise() {
                 fontWeight: 300,
                 color: "#6f6f6f",
                 lineHeight: "1.7",
-                textAlign: "justify",
-                hyphens: "auto",
+                textAlign: "center",
               }}
             >
               {item.text}
             </p>
-          </button>
+          </div>
         ))}
       </div>
     </div>

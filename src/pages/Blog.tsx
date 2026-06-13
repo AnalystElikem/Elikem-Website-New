@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import useResponsive from "../hooks/useResponsive";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { erpnextPublicOrigin } from "../config/erpnextPublic";
 
 type BlogPost = {
   name: string;
@@ -23,7 +24,10 @@ const paper = "#f5f2eb";
 function getImageUrl(imagePath?: string) {
   if (!imagePath) return null;
   if (imagePath.startsWith("http")) return imagePath;
-  return `https://siamae.frappe.cloud${imagePath}`;
+  if (!erpnextPublicOrigin) {
+    return imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  }
+  return `${erpnextPublicOrigin}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 }
 
 export default function Blog() {
@@ -52,7 +56,7 @@ export default function Blog() {
         setCategories(["All", ...(categoriesData.categories || [])]);
         setSelectedCategory("All");
       } catch (err) {
-        setError("Failed to load blog data");
+        setError("We couldn’t load the journal right now. Please try again later.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -98,7 +102,6 @@ export default function Blog() {
         }}
       >
         <Navbar />
-        <hr className="blog-below-nav-divider" />
         <div
           style={{
             padding: "100px 24px",
@@ -117,7 +120,6 @@ export default function Blog() {
     return (
       <div style={{ background: paper, minHeight: "100vh" }}>
         <Navbar />
-        <hr className="blog-below-nav-divider" />
         <div style={{ padding: "100px 24px", textAlign: "center", color: "#b54a4a" }}>
           {error}
         </div>
@@ -130,7 +132,6 @@ export default function Blog() {
     return (
       <div style={{ background: paper, minHeight: "100vh" }}>
         <Navbar />
-        <hr className="blog-below-nav-divider" />
         <div style={{ padding: "100px 24px", textAlign: "center", color: muted }}>
           Nothing published yet. Check back soon.
         </div>
@@ -150,7 +151,6 @@ export default function Blog() {
       }}
     >
       <Navbar />
-      <hr className="blog-below-nav-divider" />
 
       <header
         style={{

@@ -15,7 +15,11 @@ import Analyst from "./pages/Analyst";
 import Writer from "./pages/Writer";
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
+import Books from "./pages/Books";
+import BookRead from "./pages/BookRead";
+import BooksPreorder from "./pages/BooksPreorder";
 import Contact from "./pages/Contact";
+import RotatingFavicon from "./components/RotatingFavicon";
 
 // ✅ HOME PAGE COMPONENT
 function Home() {
@@ -69,15 +73,21 @@ function Home() {
 // ✅ APP ROUTER
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/pastor" element={<Pastor />} />
-      <Route path="/data" element={<Analyst />} />
-      <Route path="/writing" element={<Writer />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/blog/:blogName" element={<BlogDetail />} />
-      <Route path="/contact" element={<Contact />} />
-    </Routes>
+    <>
+      <RotatingFavicon />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/pastor" element={<Pastor />} />
+        <Route path="/data" element={<Analyst />} />
+        <Route path="/writing" element={<Writer />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:blogName" element={<BlogDetail />} />
+        <Route path="/books/preorder/:bookId" element={<BooksPreorder />} />
+        <Route path="/books/:bookId/read" element={<BookRead />} />
+        <Route path="/books" element={<Books />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </>
   );
 }

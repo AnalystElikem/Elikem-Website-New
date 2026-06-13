@@ -3,7 +3,7 @@ import Footer from "../components/Footer";
 import EnquiryForm from "../components/EnquiryForm";
 
 /**
- * Standalone contact / feedback page (form posts to `/api/enquiry` → ERPNext Feedback).
+ * Standalone contact / feedback page.
  */
 export default function Contact() {
   return (

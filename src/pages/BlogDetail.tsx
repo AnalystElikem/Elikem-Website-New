@@ -4,6 +4,7 @@ import useResponsive from "../hooks/useResponsive";
 import ReactMarkdown from "react-markdown";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { erpnextPublicOrigin } from "../config/erpnextPublic";
 
 type BlogPost = {
   name: string;
@@ -35,7 +36,7 @@ export default function BlogDetail() {
   useEffect(() => {
     const fetchPost = async () => {
       if (!blogName) {
-        setError("Blog post not found");
+        setError("We couldn’t find that article.");
         setLoading(false);
         return;
       }
@@ -50,21 +51,21 @@ export default function BlogDetail() {
             typeof data?.reason === "string" ? data.reason : "";
           setError(
             reason === "blog_post_not_found"
-              ? "This post could not be found."
-              : "Failed to load blog post",
+              ? "This article could not be found."
+              : "We couldn’t load this article. Please try again later.",
           );
           setPost(null);
           return;
         }
         const loaded = data.post as BlogPost | null | undefined;
         if (!loaded?.name) {
-          setError("This post could not be found.");
+          setError("This article could not be found.");
           setPost(null);
           return;
         }
         setPost(loaded);
 
-        // ERPNext read counts use the document `name`, not the URL slug / route segment.
+        // Read-count API expects the internal document id, not the blog URL slug.
         const docName = encodeURIComponent(loaded.name);
 
         const readsRes = await fetch(`/api/blog/${docName}/reads`);
@@ -81,7 +82,7 @@ export default function BlogDetail() {
           sessionStorage.setItem(sessionKey, "true");
         }
       } catch (err) {
-        setError("Failed to load blog post");
+        setError("We couldn’t load this article. Please try again later.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -104,7 +105,10 @@ export default function BlogDetail() {
   const getImageUrl = (imagePath?: string) => {
     if (!imagePath) return null;
     if (imagePath.startsWith("http")) return imagePath;
-    return `https://siamae.frappe.cloud${imagePath}`;
+    if (!erpnextPublicOrigin) {
+      return imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+    }
+    return `${erpnextPublicOrigin}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
   };
 
   const mdComponents = {
@@ -262,7 +266,6 @@ export default function BlogDetail() {
     return (
       <div style={{ background: paper, minHeight: "100vh" }}>
         <Navbar />
-        <hr className="blog-below-nav-divider" />
         <div
           style={{
             padding: "100px 24px",
@@ -281,10 +284,9 @@ export default function BlogDetail() {
     return (
       <div style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
         <Navbar />
-        <hr className="blog-below-nav-divider" />
         <div style={{ padding: "100px 24px", textAlign: "center" }}>
           <p style={{ fontSize: "16px", color: "#b54a4a", marginBottom: "24px" }}>
-            {error || "This post could not be found."}
+            {error || "This article could not be found."}
           </p>
           <Link
             to="/blog"
@@ -309,7 +311,6 @@ export default function BlogDetail() {
   return (
     <div style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
       <Navbar />
-      <hr className="blog-below-nav-divider" />
 
       <article>
         <div

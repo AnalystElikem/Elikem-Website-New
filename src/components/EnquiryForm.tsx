@@ -144,12 +144,12 @@ export default function EnquiryForm() {
 
         if (!contentType.includes("application/json")) {
           text =
-            "The server did not return JSON — the enquiry API may be offline or the request hit the wrong URL. Try again after refreshing, or email directly.";
+            "We couldn’t send your message right now. Please refresh and try again, or email us directly.";
         } else if (typeof data.message === "string" && data.message && !reason) {
           text =
             import.meta.env.DEV
               ? data.message
-              : "A server error occurred. Please try again later.";
+              : "Something went wrong. Please try again later.";
         } else if (reason === "missing_name") {
           text = "Please add your name or organization.";
         } else if (reason === "missing_contact") {
@@ -163,26 +163,30 @@ export default function EnquiryForm() {
           text = "Your message is too long. Please shorten it and try again.";
         } else if (reason === "erpnext_not_configured") {
           text =
-            "This form is not connected to the database yet (missing ERPNext settings on the server).";
+            "We couldn’t send your message right now. Please try again later or email us directly.";
         } else if (reason === "erpnext_create_failed") {
           text =
-            "Your message could not be saved (empty response from the server). Check the Feedback DocType and permissions.";
+            "We couldn’t save your message. Please try again or email us directly.";
         } else if (reason === "erpnext" && erpDetail) {
           const line = erpDetail.split("\n")[0] ?? erpDetail;
           const cleaned = line
             .replace(/^ERPNext API error \(\d+\):\s*/i, "")
             .trim();
-          if (cleaned.length > 0 && cleaned.length < 320) {
+          if (
+            import.meta.env.DEV &&
+            cleaned.length > 0 &&
+            cleaned.length < 320
+          ) {
             text = `Could not save: ${cleaned}`;
           } else {
             text =
-              "Could not save your message. In ERPNext, check that the Feedback DocType field names match the site (see BACKEND_API.md) and that Feedback Type options match the form (e.g. General, Pastoral / spiritual).";
+              "We couldn’t save your message. Please try again or email us directly.";
           }
         } else if (reason === "server_error") {
           text =
             typeof data.hint === "string" && import.meta.env.DEV
               ? `Server error: ${data.hint}`
-              : "Something failed on the server. Please try again or use email.";
+              : "Something went wrong. Please try again or email us directly.";
         }
 
         setStatus({ type: "err", text });
@@ -246,7 +250,7 @@ export default function EnquiryForm() {
             lineHeight: 1.2,
           }}
         >
-          Share feedback
+          Let's Connect
         </h2>
         <p
           style={{

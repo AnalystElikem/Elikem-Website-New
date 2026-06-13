@@ -13,10 +13,16 @@ import {
   listDrivePreviews,
   streamDriveFileDownload,
 } from "./driveStore.js";
-import { getLatestBooksFooterEntry } from "./booksStore.js";
+import {
+  getLatestBooksFooterEntry,
+  getAllBooksFromSiteCatalog,
+  getSiteBookById,
+  streamFreeBookFileForRead,
+} from "./booksStore.js";
 import { submitFreeGiftSignup } from "./bookGiftStore.js";
 import { submitWebsiteEnquiry } from "./enquiryStore.js";
 import { createBookOrder, getOrders } from "./ordersStore.js";
+import { submitBookPreorder } from "./preorderStore.js";
 import {
   getAllBlogPosts,
   getBlogPostByRoute,
@@ -153,6 +159,104 @@ export async function registerRoutes(
       res.setHeader("Pragma", "no-cache");
       const book = await getLatestBooksFooterEntry();
       res.json({ book });
+    }),
+  );
+
+  /** All rows from ERPNext **Books** doctype (`ERPNEXT_BOOKS_DOCTYPE`), for the public books page */
+  router.get(
+    "/books/catalog",
+    asyncHandler(async (_req: Request, res: Response) => {
+      res.setHeader(
+        "Cache-Control",
+        "public, s-maxage=120, stale-while-revalidate=300",
+      );
+      const books = await getAllBooksFromSiteCatalog();
+      res.json({ books });
+    }),
+  );
+
+  router.get(
+    "/books/catalog/:bookId",
+    asyncHandler(async (req: Request, res: Response) => {
+      const raw = String(req.params.bookId || "").trim();
+      const bookId = raw;
+      if (!bookId) {
+        res.status(400).json({ reason: "missing_book_id" });
+        return;
+      }
+      const book = await getSiteBookById(bookId);
+      if (!book) {
+        res.status(404).json({ reason: "book_not_found" });
+        return;
+      }
+      res.setHeader("Cache-Control", "public, max-age=60");
+      res.json({ book });
+    }),
+  );
+
+  /** Same-origin PDF stream for on-site reader (embeds without ERPNext X-Frame-Options issues). */
+  router.get(
+    "/books/read/:bookId/stream",
+    asyncHandler(async (req: Request, res: Response): Promise<void> => {
+      const bookId = String(req.params.bookId || "").trim();
+      if (!bookId) {
+        res.status(400).type("text/plain").send("missing_book_id");
+        return;
+      }
+      const attachment = String(req.query.attachment || "") === "1";
+      await streamFreeBookFileForRead(bookId, res, { attachment });
+    }),
+  );
+
+  router.post(
+    "/books/preorder",
+    asyncHandler(async (req: Request, res: Response): Promise<void> => {
+      const book = String(req.body?.book || "").trim();
+      const email = String(req.body?.email || "").trim();
+      if (!book) {
+        res.status(400).json({ ok: false, reason: "missing_book" });
+        return;
+      }
+      if (!email) {
+        res.status(400).json({ ok: false, reason: "missing_email" });
+        return;
+      }
+
+      const row = await getSiteBookById(book);
+      if (!row) {
+        res.status(404).json({ ok: false, reason: "book_not_found" });
+        return;
+      }
+      if (!row.isPreorder) {
+        res.status(400).json({ ok: false, reason: "not_preorder" });
+        return;
+      }
+
+      try {
+        const { docName } = await submitBookPreorder(book, email);
+        res.json({ ok: true, docName });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg === "missing_book" || msg === "missing_email") {
+          res.status(400).json({ ok: false, reason: msg });
+          return;
+        }
+        if (msg === "invalid_email") {
+          res.status(400).json({ ok: false, reason: "invalid_email" });
+          return;
+        }
+        if (msg === "erpnext_create_no_name") {
+          res.status(502).json({ ok: false, reason: "erpnext_create_failed" });
+          return;
+        }
+        if (msg.startsWith("ERPNext API error")) {
+          console.error("[books/preorder]", err);
+          res.status(502).json({ ok: false, reason: "erpnext", detail: msg });
+          return;
+        }
+        console.error("[books/preorder]", err);
+        res.status(500).json({ ok: false, reason: "server_error" });
+      }
     }),
   );
 

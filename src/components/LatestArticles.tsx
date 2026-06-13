@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useResponsive from "../hooks/useResponsive";
+import { erpnextPublicOrigin } from "../config/erpnextPublic";
 
 type BlogPostApi = {
   name: string;
@@ -23,7 +24,10 @@ type CardPost = {
 function getImageUrl(imagePath?: string) {
   if (!imagePath) return "";
   if (imagePath.startsWith("http")) return imagePath;
-  return `https://siamae.frappe.cloud${imagePath}`;
+  if (!erpnextPublicOrigin) {
+    return imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  }
+  return `${erpnextPublicOrigin}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 }
 
 function formatDate(dateString?: string) {

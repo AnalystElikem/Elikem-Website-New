@@ -10,9 +10,12 @@ Create a `.env` file in the root directory with the following variables:
 
 ```env
 # ERPNext Configuration
-ERPNEXT_API_URL=https://siamae.frappe.cloud/
+ERPNEXT_API_URL=https://erp-elikem.l.frappe.cloud/
 ERPNEXT_API_KEY=your-api-key
 ERPNEXT_API_SECRET=your-api-secret
+
+# Optional: Books list API columns if ERPNext returns 417 (comma-separated, no spaces)
+# ERPNEXT_BOOKS_LIST_FIELDS=name,book_name,book,image,modified,is_free,is_amazon,is_preorder,amazon_url
 
 # Newsletter Cache TTL (in milliseconds, default 5 minutes)
 NEWSLETTER_CACHE_TTL_MS=300000
@@ -22,6 +25,8 @@ API_PORT=3001
 
 # Client Configuration
 VITE_USE_GOOGLE_API=false
+# Public site origin for blog images (same host as ERPNEXT_API_URL; no API secret)
+VITE_ERPNEXT_PUBLIC_URL=https://erp-elikem.l.frappe.cloud
 ```
 
 ### Required ERPNext Doctypes
@@ -34,10 +39,16 @@ This application requires the following ERPNext doctypes to be set up:
 2. **Book** - Stores book information and metadata
    - Fields: `title` (Text), `description` (Text Editor), `file_url` (URL)
 
-3. **Book Order** - Stores book order information
+3. **Books** — site catalog (`/books` page, `GET /api/books/catalog`) and newsletter “free gift” block (`GET /api/books/footer/latest`). Doctype name can be overridden with `ERPNEXT_BOOKS_DOCTYPE` (default `Books`).
+   - Typical fields: `book_name`, `book` (Attach / file URL), `image` (Attach), description (`description` / `book_description` / **`ERPNEXT_BOOKS_DESCRIPTION_FIELD`**)
+   - Optional flags (Check or equivalent): `is_free` (on-site read + download when `book` is a public `http(s)` URL), `is_amazon` + `amazon_url`, `is_preorder` (enables `/books/preorder/:id` + `POST /api/books/preorder`)
+
+4. **Book Order** - Stores book order information
    - Fields: `email` (Email), `customer_name` (Text), `book_title` (Text), `quantity` (Int), `delivery_address` (Text), `phone` (Text), `order_date` (Datetime)
 
-4. **Feedback** (DocType name may be `Feedback`) — contact / feedback from the site
+5. **Pre-Order** — rows created from the site pre-order form (`POST /api/books/preorder`). Doctype name override: **`ERPNEXT_PREORDER_DOCTYPE`** (default `Pre-Order`). Default field API names: **`book`** (Link to **Books** document name), **`email`**. Override with **`ERPNEXT_PREORDER_BOOK_FIELD`** / **`ERPNEXT_PREORDER_EMAIL_FIELD`**. Optional **`ERPNEXT_PREORDER_NAMING_SERIES`**.
+
+6. **Feedback** (DocType name may be `Feedback`) — contact / feedback from the site
    - Fields (default API names; match **Customize Form** or override with env):
      - `name__organization` — Name / Organization (Frappe `__` when the label contains `/`; override with `ERPNEXT_FEEDBACK_NAME_ORG_FIELD`)
      - `email` — Email (optional if phone is sent)
@@ -119,6 +130,77 @@ Response:
   ]
 }
 ```
+
+#### List all **Books** doctype rows (public catalog page)
+
+Uses the same ERPNext doctype as the newsletter “free gift” block (`Books` by default, or `ERPNEXT_BOOKS_DOCTYPE`). Each item includes cover image URL, description, file link, and optional sale flags.
+
+```
+GET /api/books/catalog
+
+Response:
+{
+  "books": [
+    {
+      "id": "BOOKS-00001",
+      "bookName": "Title from ERPNext",
+      "description": "Plain or HTML description text",
+      "imageUrl": "https://your-site/files/…",
+      "bookUrl": "https://your-site/files/…pdf",
+      "isFree": true,
+      "isAmazon": false,
+      "isPreorder": false,
+      "amazonUrl": null
+    }
+  ]
+}
+```
+
+#### Get one **Books** row (by ERPNext `name`)
+
+```
+GET /api/books/catalog/:bookId
+
+Response: { "book": { ... same shape as one catalog item ... } }
+```
+
+#### Stream free book PDF for on-site reader (same-origin)
+
+Proxies the **Books** `book` file through this app so the PDF can load in an **embed** on your site. Direct ERPNext file URLs often set **`X-Frame-Options: SAMEORIGIN`**, which blocks embedding from `localhost` or another host.
+
+The server loads the full file into memory (cap **80 MB**), checks for a **`%PDF`** header, then responds with **`Content-Length`** so downloads are not truncated. It tries, in order: direct URL with **token** auth, **Basic** auth, then **`/api/method/download_file`** and the legacy **`frappe.utils.file_manager.download_file`** (same-site URLs only).
+
+- Allowed only when the book has **`isFree: true`** and a valid **`http(s)`** `bookUrl`.
+- **`?attachment=1`** — `Content-Disposition: attachment` for download (includes an ASCII `filename=` for browser compatibility).
+
+```
+GET /api/books/read/:bookId/stream
+GET /api/books/read/:bookId/stream?attachment=1
+```
+
+Response: binary stream (`Content-Type` from upstream, usually `application/pdf`). Status **`403`** if not a free on-site title, **`502`** if the file URL cannot be fetched.
+
+#### Submit a pre-order (creates **Pre-Order** in ERPNext)
+
+Requires the **Books** row to have `is_preorder` set. Body sends the Books document **`name`** as `book` (not the display title).
+
+```
+POST /api/books/preorder
+Content-Type: application/json
+
+{
+  "book": "BOOKS-00001",
+  "email": "reader@example.com"
+}
+
+Response:
+{
+  "ok": true,
+  "docName": "PRE-ORDER-00001"
+}
+```
+
+Error JSON examples: `{ "ok": false, "reason": "not_preorder" }`, `{ "ok": false, "reason": "book_not_found" }`, `{ "ok": false, "reason": "invalid_email" }`.
 
 #### List Recent Book Previews (Public)
 ```
@@ -264,6 +346,8 @@ Response:
 - **`server/newsletterStore.ts`** - Newsletter subscription management (using ERPNext Subscribers)
 - **`server/ordersStore.ts`** - Book order management (using ERPNext Book Order)
 - **`server/driveStore.ts`** - Books management (using ERPNext Book doctype)
+- **`server/booksStore.ts`** - **Books** doctype (site catalog + newsletter “latest book”); `GET /api/books/catalog`, single-book GET, footer latest
+- **`server/preorderStore.ts`** - **Pre-Order** doctype inserts from `POST /api/books/preorder`
 - **`server/accessToken.ts`** - JWT token generation and verification
 - **`server/static.ts`** - Static file serving for production
 - **`server/vite.ts`** - Vite integration for development
@@ -302,7 +386,33 @@ This stores book information and file URLs:
   - `description` (Text Editor, Optional)
   - `file_url` (URL, Optional - link to downloadable file)
 
-#### 3. Book Order Doctype
+#### 3. Books Doctype (site catalog & newsletter)
+
+Used by **`/books`**, **`GET /api/books/catalog`**, **`GET /api/books/footer/latest`**, and the free-gift flow. Override the doctype name with **`ERPNEXT_BOOKS_DOCTYPE`** if yours differs from `Books`.
+
+- **`ERPNEXT_BOOKS_LIST_FIELDS`** (optional) — comma-separated column names for the ERPNext **list** API. Use this if the default list returns **417** (unknown or non-list field such as `title` / `description` on your form).
+
+- Name: `Books` (or your custom name in env)
+- Fields (align API field names with your form; the app maps common variants):
+  - `book_name` (Data) — display title
+  - `book` (Attach or URL) — downloadable file (resolved to a public URL)
+  - `image` (Attach) — cover
+  - Description: `description`, `book_description`, or a custom field set via **`ERPNEXT_BOOKS_DESCRIPTION_FIELD`**
+  - `is_free`, `is_amazon`, `is_preorder` (Check) — drive `/books` UI and reader route
+  - `amazon_url` (Data or Small Text) — full `https://…` Amazon link when `is_amazon` is set
+
+#### 4. Pre-Order Doctype
+
+Created when a visitor submits **`POST /api/books/preorder`** from **`/books/preorder/:bookId`**.
+
+- Name: `Pre-Order` (or set **`ERPNEXT_PREORDER_DOCTYPE`**)
+- Fields (defaults; override with env):
+  - **`book`** — Link to **Books** (stores the Books document `name`; override **`ERPNEXT_PREORDER_BOOK_FIELD`**)
+  - **`email`** — Email (override **`ERPNEXT_PREORDER_EMAIL_FIELD`**)
+- If the doctype uses **Naming Series**, set **`ERPNEXT_PREORDER_NAMING_SERIES`** (e.g. `PRE-.#####`).
+- Inserts use **`?ignore_permissions=1`** unless **`ERPNEXT_PREORDER_RESPECT_PERMISSIONS=1`**.
+
+#### 5. Book Order Doctype
 
 This stores book order information:
 
@@ -366,4 +476,4 @@ This will:
 - Always use HTTPS in production
 - Tokens are JWT-based and expire after a configurable period
 - Store your ERPNext API credentials securely in environment variables only
-- Restrict ERPNext API key permissions to only necessary doctypes (Subscribers, Book, Book Order)
+- Restrict ERPNext API key permissions to only necessary doctypes (Subscribers, Book, Books, Book Order, Pre-Order)
