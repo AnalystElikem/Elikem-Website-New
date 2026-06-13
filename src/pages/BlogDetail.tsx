@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import useResponsive from "../hooks/useResponsive";
 import DOMPurify from "dompurify";
+import "quill/dist/quill.snow.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { erpnextPublicOrigin } from "../config/erpnextPublic";
@@ -115,7 +116,14 @@ export default function BlogDetail() {
   const safeBodyHtml = useMemo(() => {
     const raw = post?.content?.trim();
     if (!raw) return "";
-    return DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
+    const sanitized = DOMPurify.sanitize(raw, {
+      USE_PROFILES: { html: true },
+    });
+    const t = sanitized.trim();
+    if (!t) return "";
+    // ERPNext often stores editor fragments without a wrapper; Quill CSS targets .ql-snow .ql-editor
+    const hasQlEditor = /^[\s\uFEFF]*<div\b[^>]*\bql-editor\b[^>]*>/i.test(t);
+    return hasQlEditor ? t : `<div class="ql-editor">${t}</div>`;
   }, [post?.content]);
 
   if (loading) {
@@ -284,14 +292,8 @@ export default function BlogDetail() {
         >
           {safeBodyHtml ? (
             <div
-              className="blog-content blog-prose blog-prose--html"
-              style={{
-                fontSize: isMobile ? "16px" : "17px",
-                lineHeight: 1.78,
-                color: "#2a2a2a",
-                wordBreak: "break-word",
-                hyphens: "auto",
-              }}
+              className="blog-content blog-body-erpnext ql-snow"
+              style={{ overflowWrap: "break-word" }}
               dangerouslySetInnerHTML={{ __html: safeBodyHtml }}
             />
           ) : (

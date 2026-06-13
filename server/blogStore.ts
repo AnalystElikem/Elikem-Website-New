@@ -17,15 +17,13 @@ export type BlogPost = {
 };
 
 /**
- * Get all published blog posts
+ * Get all published blog posts (ERPNext "Published" must be enabled on the post).
  */
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
   try {
-    // Fetch all blog posts (including drafts for now)
-    // In production, filter by { docstatus: 1 } for published only
     const result = await listERPNextDocuments(
       "Blog Post",
-      {}, // Empty filter to get all posts
+      { published: 1 },
       [
         "name",
         "title",
