@@ -8,6 +8,7 @@ import EnquiryForm from "../components/EnquiryForm";
 export default function Contact() {
   return (
     <div
+      className="page-with-fixed-nav"
       style={{
         minHeight: "100vh",
         background: "#f5f2eb",

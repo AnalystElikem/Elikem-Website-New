@@ -29,7 +29,7 @@ export default function About() {
   }, []);
 
   return (
-    <div style={{ background: "#f5f2eb", minHeight: "100vh" }}>
+    <div className="page-with-fixed-nav" style={{ background: "#f5f2eb", minHeight: "100vh" }}>
       <Navbar />
 
       <div

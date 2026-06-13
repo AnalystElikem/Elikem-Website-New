@@ -59,7 +59,7 @@ export default function Books() {
   if (loading) {
     return (
       <div
-        className="books-page"
+        className="books-page page-with-fixed-nav"
         style={{
           background: paper,
           minHeight: "100vh",
@@ -77,7 +77,7 @@ export default function Books() {
   if (error) {
     return (
       <div
-        className="books-page"
+        className="books-page page-with-fixed-nav"
         style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}
       >
         <Navbar />
@@ -91,7 +91,7 @@ export default function Books() {
 
   return (
     <div
-      className="books-page"
+      className="books-page page-with-fixed-nav"
       style={{
         background: paper,
         minHeight: "100vh",

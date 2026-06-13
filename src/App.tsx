@@ -38,6 +38,7 @@ function Home() {
 
   return (
     <div
+      className="page-with-fixed-nav"
       style={{
         background: "#f5f2eb",
         fontFamily: "Inter, sans-serif",

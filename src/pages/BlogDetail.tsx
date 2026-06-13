@@ -264,7 +264,7 @@ export default function BlogDetail() {
 
   if (loading) {
     return (
-      <div style={{ background: paper, minHeight: "100vh" }}>
+      <div className="page-with-fixed-nav" style={{ background: paper, minHeight: "100vh" }}>
         <Navbar />
         <div
           style={{
@@ -282,7 +282,7 @@ export default function BlogDetail() {
 
   if (error || !post) {
     return (
-      <div style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
+      <div className="page-with-fixed-nav" style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
         <Navbar />
         <div style={{ padding: "100px 24px", textAlign: "center" }}>
           <p style={{ fontSize: "16px", color: "#b54a4a", marginBottom: "24px" }}>
@@ -309,7 +309,7 @@ export default function BlogDetail() {
   const imageUrl = getImageUrl(post.meta_image);
 
   return (
-    <div style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
+    <div className="page-with-fixed-nav" style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
       <Navbar />
 
       <article>

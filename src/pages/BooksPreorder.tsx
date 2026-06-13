@@ -98,7 +98,7 @@ export default function BooksPreorder() {
 
   if (book === undefined) {
     return (
-      <div style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
+      <div className="page-with-fixed-nav" style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
         <Navbar />
         <p style={{ padding: "80px 24px", textAlign: "center", color: muted }}>Loading…</p>
       </div>
@@ -107,7 +107,7 @@ export default function BooksPreorder() {
 
   if (!book) {
     return (
-      <div style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
+      <div className="page-with-fixed-nav" style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
         <Navbar />
         <div style={{ padding: "80px 24px", textAlign: "center", color: muted }}>
           <p>Book not found.</p>
@@ -124,6 +124,7 @@ export default function BooksPreorder() {
 
   return (
     <div
+      className="page-with-fixed-nav"
       style={{
         background: paper,
         minHeight: "100vh",

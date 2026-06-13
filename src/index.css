@@ -14,6 +14,20 @@ html, body {
   width: 100%;
 }
 
+/* Reserve space under fixed Navbar (<640px = mobile nav height; ≥640 = desktop). */
+:root {
+  --fixed-nav-offset: 108px;
+}
+@media (min-width: 640px) {
+  :root {
+    --fixed-nav-offset: 156px;
+  }
+}
+
+.page-with-fixed-nav {
+  padding-top: var(--fixed-nav-offset);
+}
+
 /* IMAGE SAFETY */
 img {
   max-width: 100%;

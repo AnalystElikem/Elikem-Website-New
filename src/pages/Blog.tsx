@@ -95,6 +95,7 @@ export default function Blog() {
   if (loading) {
     return (
       <div
+        className="page-with-fixed-nav"
         style={{
           background: paper,
           minHeight: "100vh",
@@ -118,7 +119,7 @@ export default function Blog() {
 
   if (error) {
     return (
-      <div style={{ background: paper, minHeight: "100vh" }}>
+      <div className="page-with-fixed-nav" style={{ background: paper, minHeight: "100vh" }}>
         <Navbar />
         <div style={{ padding: "100px 24px", textAlign: "center", color: "#b54a4a" }}>
           {error}
@@ -130,7 +131,7 @@ export default function Blog() {
 
   if (!posts.length) {
     return (
-      <div style={{ background: paper, minHeight: "100vh" }}>
+      <div className="page-with-fixed-nav" style={{ background: paper, minHeight: "100vh" }}>
         <Navbar />
         <div style={{ padding: "100px 24px", textAlign: "center", color: muted }}>
           Nothing published yet. Check back soon.
@@ -144,6 +145,7 @@ export default function Blog() {
 
   return (
     <div
+      className="page-with-fixed-nav"
       style={{
         background: paper,
         minHeight: "100vh",

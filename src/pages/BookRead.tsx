@@ -60,7 +60,7 @@ export default function BookRead() {
   if (book === undefined && !error) {
     return (
       <div
-        className="books-page"
+        className="books-page page-with-fixed-nav"
         style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}
       >
         <Navbar />
@@ -75,7 +75,7 @@ export default function BookRead() {
   if (error) {
     return (
       <div
-        className="books-page"
+        className="books-page page-with-fixed-nav"
         style={{ background: paper, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}
       >
         <Navbar />
@@ -104,18 +104,18 @@ export default function BookRead() {
 
   return (
     <div
-      className="books-page"
+      className="books-page page-with-fixed-nav"
       style={{
         background: allowed ? "#fff" : paper,
         fontFamily: "Inter, sans-serif",
         display: "flex",
         flexDirection: "column",
+        boxSizing: "border-box",
         ...(allowed
           ? {
               height: "100dvh",
               maxHeight: "100dvh",
               overflow: "hidden",
-              boxSizing: "border-box",
               paddingLeft: "env(safe-area-inset-left, 0px)",
               paddingRight: "env(safe-area-inset-right, 0px)",
             }
