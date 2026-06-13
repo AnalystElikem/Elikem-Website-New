@@ -25,6 +25,7 @@ export default function BooksPreorder() {
   const { isMobile } = useResponsive();
   const [book, setBook] = useState<SiteBook | null | undefined>(undefined);
   const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [submitting, setSubmitting] = useState(false);
@@ -70,6 +71,22 @@ export default function BooksPreorder() {
       });
       return;
     }
+    const phoneTrim = phoneNumber.trim();
+    if (!phoneTrim) {
+      setMessage({ ok: false, text: "Please enter your phone number." });
+      return;
+    }
+    if (phoneTrim.length > 40) {
+      setMessage({ ok: false, text: "That phone number is too long." });
+      return;
+    }
+    if (!/^[\d\s\-+().]{7,40}$/.test(phoneTrim)) {
+      setMessage({
+        ok: false,
+        text: "Please enter a valid phone number (at least 7 digits).",
+      });
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/books/preorder", {
@@ -79,6 +96,7 @@ export default function BooksPreorder() {
           book: book.id,
           email,
           full_name: fullName.trim(),
+          phone_number: phoneTrim,
           quantity: qtyParsed,
         }),
       });
@@ -98,15 +116,21 @@ export default function BooksPreorder() {
             ? "Please enter a valid email address."
             : reason === "missing_full_name"
               ? "Please enter your full name."
-              : reason === "full_name_too_long"
-                ? "That name is too long. Please shorten it."
-                : reason === "invalid_quantity"
-                  ? "Please enter a quantity between 1 and 999."
-                  : reason === "not_preorder"
-                    ? "This title is not open for pre-order."
-                    : reason === "book_not_found"
-                      ? "This book could not be found."
-                      : "Something went wrong. Please try again.";
+              : reason === "missing_phone"
+                ? "Please enter your phone number."
+                : reason === "invalid_phone"
+                  ? "Please enter a valid phone number (at least 7 digits)."
+                  : reason === "phone_too_long"
+                    ? "That phone number is too long."
+                    : reason === "full_name_too_long"
+                      ? "That name is too long. Please shorten it."
+                      : reason === "invalid_quantity"
+                        ? "Please enter a quantity between 1 and 999."
+                        : reason === "not_preorder"
+                          ? "This title is not open for pre-order."
+                          : reason === "book_not_found"
+                            ? "This book could not be found."
+                            : "Something went wrong. Please try again.";
         setMessage({ ok: false, text });
       }
     } catch {
@@ -189,7 +213,7 @@ export default function BooksPreorder() {
           Pre-order
         </h1>
         <p style={{ color: "#5c5a54", fontSize: "15px", lineHeight: 1.6, marginBottom: "28px" }}>
-          Request a pre-order for the title below. Add your name, how many copies, and your email.
+          Request a pre-order for the title below. Add your name, phone, how many copies, and your email.
         </p>
 
         {!preorderOpen ? (
@@ -252,6 +276,37 @@ export default function BooksPreorder() {
               onChange={(ev) => setFullName(ev.target.value)}
               placeholder="Your full name"
               maxLength={200}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 14px",
+                marginBottom: "22px",
+                border: "1px solid #dcd8cf",
+                borderRadius: "4px",
+                fontSize: "15px",
+                fontFamily: "inherit",
+              }}
+            />
+            <label
+              style={{
+                display: "block",
+                fontSize: "11px",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: muted,
+                marginBottom: "8px",
+              }}
+            >
+              Phone number
+            </label>
+            <input
+              type="tel"
+              required
+              autoComplete="tel"
+              value={phoneNumber}
+              onChange={(ev) => setPhoneNumber(ev.target.value)}
+              placeholder="+233 24 000 0000"
+              maxLength={40}
               style={{
                 width: "100%",
                 boxSizing: "border-box",

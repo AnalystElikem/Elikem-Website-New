@@ -216,6 +216,9 @@ export async function registerRoutes(
       const fullName = String(
         req.body?.full_name ?? req.body?.fullName ?? ""
       ).trim();
+      const phone = String(
+        req.body?.phone_number ?? req.body?.phone ?? req.body?.phoneNumber ?? ""
+      ).trim();
       const quantity =
         req.body?.quantity ?? req.body?.qty ?? req.body?.qty_ordered;
       if (!book) {
@@ -230,6 +233,10 @@ export async function registerRoutes(
         res.status(400).json({ ok: false, reason: "missing_full_name" });
         return;
       }
+      if (!phone) {
+        res.status(400).json({ ok: false, reason: "missing_phone" });
+        return;
+      }
 
       const row = await getSiteBookById(book);
       if (!row) {
@@ -242,11 +249,25 @@ export async function registerRoutes(
       }
 
       try {
-        const { docName } = await submitBookPreorder(book, email, fullName, quantity);
+        const { docName } = await submitBookPreorder(
+          book,
+          email,
+          fullName,
+          phone,
+          quantity,
+        );
         res.json({ ok: true, docName });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         if (msg === "missing_book" || msg === "missing_email") {
+          res.status(400).json({ ok: false, reason: msg });
+          return;
+        }
+        if (msg === "missing_phone") {
+          res.status(400).json({ ok: false, reason: "missing_phone" });
+          return;
+        }
+        if (msg === "invalid_phone" || msg === "phone_too_long") {
           res.status(400).json({ ok: false, reason: msg });
           return;
         }

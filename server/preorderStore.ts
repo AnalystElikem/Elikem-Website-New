@@ -9,6 +9,7 @@ import { makeERPNextRequest } from "./erpnextAuth.js";
  * - `ERPNEXT_PREORDER_EMAIL_FIELD` (default `email`)
  * - `ERPNEXT_PREORDER_FULL_NAME_FIELD` (default `full_name`)
  * - `ERPNEXT_PREORDER_QUANTITY_FIELD` (default `quantity`) — Int / numeric in ERPNext
+ * - `ERPNEXT_PREORDER_PHONE_FIELD` (default `phone_number`) — Data / Phone
  * - `ERPNEXT_PREORDER_NAMING_SERIES` — if your doctype uses naming series
  * - `ERPNEXT_PREORDER_RESPECT_PERMISSIONS=1` — omit `ignore_permissions` on POST
  */
@@ -21,9 +22,14 @@ const FIELD_FULL_NAME = (
 const FIELD_QUANTITY = (
   process.env.ERPNEXT_PREORDER_QUANTITY_FIELD || "quantity"
 ).trim();
+const FIELD_PHONE = (
+  process.env.ERPNEXT_PREORDER_PHONE_FIELD || "phone_number"
+).trim();
 const NAMING_SERIES = process.env.ERPNEXT_PREORDER_NAMING_SERIES?.trim();
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Lenient international-style phone (digits + common separators). */
+const PHONE_RE = /^[\d\s\-+().]{7,40}$/;
 
 function extractCreatedName(result: unknown): string {
   if (!result || typeof result !== "object") return "";
@@ -41,6 +47,7 @@ function normalizeEmail(email: string): string {
 }
 
 const FULL_NAME_MAX = 200;
+const PHONE_MAX = 40;
 const QTY_MIN = 1;
 const QTY_MAX = 999;
 
@@ -48,17 +55,22 @@ export async function submitBookPreorder(
   booksDocName: string,
   emailRaw: string,
   fullNameRaw: string,
+  phoneRaw: string,
   quantityRaw: unknown
 ): Promise<{ docName: string }> {
   const book = booksDocName.trim();
   const email = normalizeEmail(emailRaw);
   const fullName = fullNameRaw.trim().replace(/\s+/g, " ");
+  const phone = phoneRaw.trim().replace(/\s+/g, " ");
 
   if (!book) throw new Error("missing_book");
   if (!email) throw new Error("missing_email");
   if (!EMAIL_RE.test(email)) throw new Error("invalid_email");
   if (!fullName) throw new Error("missing_full_name");
   if (fullName.length > FULL_NAME_MAX) throw new Error("full_name_too_long");
+  if (!phone) throw new Error("missing_phone");
+  if (phone.length > PHONE_MAX) throw new Error("phone_too_long");
+  if (!PHONE_RE.test(phone)) throw new Error("invalid_phone");
 
   let quantity = NaN;
   if (typeof quantityRaw === "number" && Number.isFinite(quantityRaw)) {
@@ -78,6 +90,7 @@ export async function submitBookPreorder(
     [FIELD_BOOK]: book,
     [FIELD_EMAIL]: email,
     [FIELD_FULL_NAME]: fullName,
+    [FIELD_PHONE]: phone,
     [FIELD_QUANTITY]: quantity,
   };
 
