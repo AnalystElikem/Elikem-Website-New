@@ -161,86 +161,42 @@ export default function Navbar() {
         willChange: "transform",
       }}
     >
-      <div
+      <button
+        type="button"
+        aria-label="Go to home page"
+        tabIndex={hidden ? -1 : 0}
+        onClick={() => {
+          if (location.pathname !== "/") {
+            navigate("/");
+          } else {
+            document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
+          }
+        }}
         style={{
+          width: isMobile ? "64px" : "96px",
+          height: isMobile ? "64px" : "96px",
+          borderRadius: "50%",
+          overflow: "hidden",
+          background: "#eae6dc",
           display: "flex",
           alignItems: "center",
-          gap: isMobile ? "12px" : "18px",
-          minWidth: 0,
-          flex: "0 1 auto",
+          justifyContent: "center",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
         }}
       >
-        <button
-          type="button"
-          aria-label="Go to home page"
-          tabIndex={hidden ? -1 : 0}
-          onClick={() => {
-            if (location.pathname !== "/") {
-              navigate("/");
-            } else {
-              document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
-            }
-          }}
+        <img
+          src={logos[currentLogo]}
+          alt=""
           style={{
-            width: isMobile ? "64px" : "96px",
-            height: isMobile ? "64px" : "96px",
-            borderRadius: "50%",
-            overflow: "hidden",
-            background: "#eae6dc",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "none",
-            padding: 0,
-            cursor: "pointer",
-            flexShrink: 0,
+            width: "75%",
+            height: "75%",
+            objectFit: "contain",
+            pointerEvents: "none",
           }}
-        >
-          <img
-            src={logos[currentLogo]}
-            alt=""
-            style={{
-              width: "75%",
-              height: "75%",
-              objectFit: "contain",
-              pointerEvents: "none",
-            }}
-          />
-        </button>
-        <button
-          type="button"
-          aria-label="Go to home page"
-          tabIndex={hidden ? -1 : 0}
-          onClick={() => {
-            if (location.pathname !== "/") {
-              navigate("/");
-            } else {
-              document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
-            }
-          }}
-          style={{
-            border: "none",
-            background: "transparent",
-            padding: "4px 0",
-            margin: 0,
-            cursor: "pointer",
-            fontFamily: '"Playfair Display", serif',
-            fontWeight: 600,
-            fontSize: isMobile ? "13px" : "17px",
-            letterSpacing: "0.12em",
-            color: "#2f2f2f",
-            textAlign: "left",
-            lineHeight: 1.2,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            minWidth: 0,
-            maxWidth: isMobile ? "min(52vw, 200px)" : "none",
-          }}
-        >
-          ELIKEM AFLAKPUI
-        </button>
-      </div>
+        />
+      </button>
 
       {!isMobile && (
         <div
