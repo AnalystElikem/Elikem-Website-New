@@ -15,7 +15,7 @@ import {
  * - Description → `description`
  * - `is_free` — free read on site + download when `book` is set
  * - `is_amazon` + `amazon_url` — buy link
- * - `is_preorder` — pre-order form (`/books/preorder/:id`)
+ * - `is_preorder` — pre-order form on **`/books`** (expand card; old `/books/preorder/:id` redirects)
  *
  * Doctype name override: `ERPNEXT_BOOKS_DOCTYPE` (default `Books`).
  * If your description field has a custom API name: `ERPNEXT_BOOKS_DESCRIPTION_FIELD`.

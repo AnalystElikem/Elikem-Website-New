@@ -4,7 +4,31 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import useResponsive from "../hooks/useResponsive";
 
-const BookPdfViewer = lazy(() => import("../components/BookPdfViewer"));
+function BookPdfViewerLoadFailed() {
+  return (
+    <div
+      style={{
+        padding: "32px 20px",
+        textAlign: "center",
+        color: "#8a4a4a",
+        fontSize: "14px",
+        lineHeight: 1.55,
+        maxWidth: "28rem",
+        margin: "0 auto",
+      }}
+    >
+      The PDF reader could not load (often a blocked script or network issue). Try{" "}
+      <strong>Download PDF</strong> above, or refresh the page.
+    </div>
+  );
+}
+
+const BookPdfViewer = lazy(() =>
+  import("../components/BookPdfViewer").catch((err) => {
+    console.error("[BookRead] BookPdfViewer chunk failed:", err);
+    return { default: BookPdfViewerLoadFailed };
+  }),
+);
 
 const paper = "#f5f2eb";
 
@@ -138,7 +162,7 @@ export default function BookRead() {
           </span>
           <a
             href={`${streamPath}?attachment=1`}
-            download={`${book.bookName.replace(/["'\\/<>|:*?]/g, "_")}.pdf`}
+            download={`${(book.bookName || "book").replace(/["'\\/<>|:*?]/g, "_")}.pdf`}
             className="books-btn books-btn--ghost book-read-toolbar__download"
           >
             Download PDF

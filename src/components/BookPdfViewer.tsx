@@ -12,7 +12,21 @@ import {
 } from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-GlobalWorkerOptions.workerSrc = pdfWorker;
+/**
+ * Vite emits `/assets/pdf.worker-*.mjs` (root-relative). Worker `importScripts` resolves
+ * relative URLs against the **page** URL, not the chunk — so a relative worker URL can
+ * 404 (e.g. from `/books/.../read` → `/books/.../assets/...`). Force same-origin absolute.
+ */
+function resolvePdfWorkerSrc(urlFromVite: string): string {
+  if (typeof window === "undefined") return urlFromVite;
+  try {
+    return new URL(urlFromVite, window.location.origin).href;
+  } catch {
+    return urlFromVite;
+  }
+}
+
+GlobalWorkerOptions.workerSrc = resolvePdfWorkerSrc(pdfWorker);
 
 type PdfPageCanvasProps = {
   pdf: PDFDocumentProxy;

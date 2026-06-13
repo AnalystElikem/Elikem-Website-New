@@ -41,7 +41,7 @@ This application requires the following ERPNext doctypes to be set up:
 
 3. **Books** — site catalog (`/books` page, `GET /api/books/catalog`) and newsletter “free gift” block (`GET /api/books/footer/latest`). Doctype name can be overridden with `ERPNEXT_BOOKS_DOCTYPE` (default `Books`).
    - Typical fields: `book_name`, `book` (Attach / file URL), `image` (Attach), description (`description` / `book_description` / **`ERPNEXT_BOOKS_DESCRIPTION_FIELD`**)
-   - Optional flags (Check or equivalent): `is_free` (on-site read + download when `book` is a public `http(s)` URL), `is_amazon` + `amazon_url`, `is_preorder` (enables `/books/preorder/:id` + `POST /api/books/preorder`)
+   - Optional flags (Check or equivalent): `is_free` (on-site read + download when `book` is a public `http(s)` URL), `is_amazon` + `amazon_url`, `is_preorder` (pre-order form on **`/books`**; legacy path **`/books/preorder/:id`** redirects to **`/books?preorder=:id`**) + `POST /api/books/preorder`
 
 4. **Book Order** - Stores book order information
    - Fields: `email` (Email), `customer_name` (Text), `book_title` (Text), `quantity` (Int), `delivery_address` (Text), `phone` (Text), `order_date` (Datetime)
@@ -403,7 +403,7 @@ Used by **`/books`**, **`GET /api/books/catalog`**, **`GET /api/books/footer/lat
 
 #### 4. Pre-Order Doctype
 
-Created when a visitor submits **`POST /api/books/preorder`** from **`/books/preorder/:bookId`**.
+Created when a visitor submits **`POST /api/books/preorder`** from the **Books** catalog page (pre-order panel on a card; old URL **`/books/preorder/:bookId`** redirects to **`/books?preorder=`**).
 
 - Name: `Pre-Order` (or set **`ERPNEXT_PREORDER_DOCTYPE`**)
 - Fields (defaults; override with env):

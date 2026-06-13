@@ -125,7 +125,10 @@ export default function Books() {
         <p
           style={{
             margin: "18px 0 0",
-            maxWidth: "540px",
+            maxWidth: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
             fontSize: isMobile ? "15px" : "16px",
             lineHeight: 1.7,
             color: "#5c5a54",

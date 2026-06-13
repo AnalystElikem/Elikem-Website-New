@@ -147,15 +147,113 @@ html {
   border-top: 1px solid #e0dcd4;
 }
 
+/* Newsletter “free gift” — justify like print: full lines flush; last line natural (no huge gaps) */
+.free-gift-description-html {
+  max-width: min(46rem, 100%);
+  overflow-wrap: break-word;
+  word-break: normal;
+  text-align: justify !important;
+  text-align-last: auto;
+  text-justify: inter-word;
+  hyphens: none;
+}
+
 .free-gift-description-html p {
-  margin: 0 0 0.85em;
+  margin: 0 0 0.9em;
+  text-align: justify !important;
+  text-align-last: auto;
 }
 
 .free-gift-description-html p:last-child {
   margin-bottom: 0;
 }
 
-/* —— Blog listing —— */
+.free-gift-description-html ul,
+.free-gift-description-html ol {
+  margin: 0 0 0.9em;
+  padding-left: 1.35em;
+  text-align: justify !important;
+  text-align-last: auto;
+}
+
+.free-gift-description-html li {
+  margin: 0.35em 0;
+  padding-left: 0.15em;
+  text-align: justify !important;
+  text-align-last: auto;
+}
+
+.free-gift-description-html li > p {
+  margin: 0.25em 0 0;
+  text-align: justify !important;
+  text-align-last: auto;
+}
+
+.free-gift-description-html a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.free-gift-description-html strong {
+  font-weight: 600;
+}
+
+.free-gift-description-html h3,
+.free-gift-description-html h4 {
+  font-family: inherit;
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 1.1em 0 0.5em;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.free-gift-description-html h3:first-child,
+.free-gift-description-html h4:first-child {
+  margin-top: 0;
+}
+
+/* Quill / rich-text wrapper from ERPNext */
+.free-gift-description-html .ql-editor {
+  padding: 0;
+  line-height: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  text-align: justify !important;
+  text-align-last: auto;
+  text-justify: inter-word;
+  hyphens: none;
+}
+
+/* Quill paragraph alignment classes (default is “left”) */
+.free-gift-description-html .ql-editor .ql-align-left,
+.free-gift-description-html .ql-editor .ql-align-center,
+.free-gift-description-html .ql-editor .ql-align-right {
+  text-align: justify !important;
+  text-align-last: auto;
+}
+
+.free-gift-description-html .ql-editor p,
+.free-gift-description-html .ql-editor ol,
+.free-gift-description-html .ql-editor ul {
+  margin-bottom: 0.9em;
+  text-align: justify !important;
+  text-align-last: auto;
+}
+
+.free-gift-description-html .ql-editor li {
+  text-align: justify !important;
+  text-align-last: auto;
+}
+
+.free-gift-description-html .ql-editor p:last-child,
+.free-gift-description-html .ql-editor ol:last-child,
+.free-gift-description-html .ql-editor ul:last-child {
+  margin-bottom: 0;
+}
+
 .blog-index-card {
   display: block;
   text-decoration: none;

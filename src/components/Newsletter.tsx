@@ -13,27 +13,72 @@ const FALLBACK_DESCRIPTION = `A practical framework for building a life with cla
 
 It will help you see clearly, build intentionally, and stay aligned — so what you're building can carry weight and stand the test of time.`;
 
+/** Quill / ERPNext often emit `style="text-align: left"` which overrides our justified layout. */
+function stripInlineTextAlignFromHtml(html: string): string {
+  return html.replace(
+    /\sstyle\s*=\s*(["'])([\s\S]*?)\1/gi,
+    (_full, quote: string, value: string) => {
+      const parts = value
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && !/^\s*text-align\s*:/i.test(s));
+      if (parts.length === 0) return "";
+      return ` style=${quote}${parts.join("; ")}${quote}`;
+    },
+  );
+}
+
+/**
+ * Quill often emits many one-line `<p>` blocks. For each, CSS treats that line as the
+ * paragraph’s last line, so `text-align: justify` never applies. Merge siblings into one
+ * `<p>` so wrapped lines justify; the real closing `</p>` still gets a normal last line.
+ */
+function mergeAdjacentParagraphsInGiftHtml(html: string): string {
+  const re = /<\/p>\s*<p(?:\s[^>]*)?>/gi;
+  let out = html;
+  let prev: string;
+  do {
+    prev = out;
+    out = out.replace(re, " ");
+  } while (out !== prev);
+  return out;
+}
+
+function prepareGiftDescriptionHtml(html: string): string {
+  return mergeAdjacentParagraphsInGiftHtml(stripInlineTextAlignFromHtml(html));
+}
+
 function GiftDescription({ text, isMobile }: { text: string; isMobile: boolean }) {
   const trimmed = text.trim();
   if (!trimmed) return null;
   const textStyle: React.CSSProperties = {
     fontFamily: "Inter, sans-serif",
     fontSize: isMobile ? "15px" : "16px",
-    lineHeight: 1.8,
-    opacity: 0.9,
-    marginBottom: "20px",
+    lineHeight: 1.7,
+    opacity: 0.92,
+    marginBottom: "1.25rem",
   };
   if (trimmed.startsWith("<")) {
     return (
       <div
         className="free-gift-description-html"
         style={textStyle}
-        dangerouslySetInnerHTML={{ __html: trimmed }}
+        dangerouslySetInnerHTML={{
+          __html: prepareGiftDescriptionHtml(trimmed),
+        }}
       />
     );
   }
+  const plainBlocks = trimmed
+    .split(/\n\s*\n+/)
+    .map((b) => b.trim().replace(/\n/g, " "))
+    .filter(Boolean);
   return (
-    <div style={{ ...textStyle, whiteSpace: "pre-wrap" }}>{trimmed}</div>
+    <div className="free-gift-description-html" style={textStyle}>
+      {plainBlocks.map((block, i) => (
+        <p key={i}>{block}</p>
+      ))}
+    </div>
   );
 }
 
@@ -124,8 +169,7 @@ export default function Newsletter() {
           display: "grid",
           gridTemplateColumns: isMobile ? "1fr" : "1fr 1.1fr",
           gap: isMobile ? "40px" : "80px",
-          alignItems: "center",
-          textAlign: isMobile ? "center" : "left",
+          alignItems: "start",
         }}
       >
         <div
@@ -179,7 +223,7 @@ export default function Newsletter() {
           )}
         </div>
 
-        <div>
+        <div style={{ textAlign: "left" }}>
           <p
             style={{
               fontFamily: "Inter, sans-serif",
@@ -196,9 +240,9 @@ export default function Newsletter() {
             style={{
               fontFamily: "Playfair Display, serif",
               fontSize: isMobile ? "28px" : "38px",
-              lineHeight: "1.3",
-              marginBottom: "20px",
-              minHeight: isMobile ? "2.6em" : "2.4em",
+              lineHeight: 1.28,
+              marginBottom: "1rem",
+              maxWidth: "46rem",
             }}
           >
             {!isReady ? (
@@ -237,8 +281,8 @@ export default function Newsletter() {
               flexDirection: isMobile ? "column" : "row",
               gap: isMobile ? "14px" : "12px",
               maxWidth: "420px",
-              margin: isMobile ? "0 auto" : "0",
-              alignItems: "center",
+              margin: 0,
+              alignItems: isMobile ? "stretch" : "center",
             }}
           >
             <input
@@ -253,7 +297,7 @@ export default function Newsletter() {
                 border: "none",
                 outline: "none",
                 fontSize: "14px",
-                textAlign: isMobile ? "center" : "left",
+                textAlign: "left",
               }}
             />
 

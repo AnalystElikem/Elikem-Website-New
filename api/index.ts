@@ -3,6 +3,11 @@ import express, { type Request, type Response, type NextFunction } from "express
 import { createServer } from "http";
 import { registerRoutes } from "../server/routes.js";
 
+/** Large PDF fetch + ERPNext round-trips can exceed the default 10s on cold start. */
+export const config = {
+  maxDuration: 60,
+};
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
