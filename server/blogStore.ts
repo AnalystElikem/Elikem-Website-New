@@ -9,7 +9,8 @@ export type BlogPost = {
   published_on?: string;
   featured?: boolean;
   blog_intro?: string;
-  content_md?: string;
+  /** Rich text (HTML) from ERPNext Blog Post `content` field */
+  content?: string;
   meta_title?: string;
   meta_description?: string;
   meta_image?: string;
@@ -34,7 +35,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
         "published_on",
         "featured",
         "blog_intro",
-        "content_md",
+        "content",
         "meta_title",
         "meta_description",
         "meta_image",
@@ -56,7 +57,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           published_on: data.published_on || undefined,
           featured: data.featured || false,
           blog_intro: data.blog_intro || undefined,
-          content_md: data.content_md || undefined,
+          content: data.content || undefined,
           meta_title: data.meta_title || undefined,
           meta_description: data.meta_description || undefined,
           meta_image: data.meta_image || undefined,

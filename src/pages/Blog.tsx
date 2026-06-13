@@ -299,11 +299,15 @@ export default function Blog() {
               <h2
                 style={{
                   fontFamily: '"Playfair Display", serif',
-                  fontSize: isMobile ? "26px" : "34px",
+                  fontSize: isMobile ? "20px" : "24px",
                   fontWeight: 500,
-                  lineHeight: 1.25,
+                  lineHeight: 1.28,
                   color: ink,
                   margin: "0 0 16px",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 4,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
                 }}
               >
                 {featuredPost.title}
@@ -395,11 +399,15 @@ export default function Blog() {
                     <h3
                       style={{
                         fontFamily: '"Playfair Display", serif',
-                        fontSize: isMobile ? "20px" : "22px",
+                        fontSize: isMobile ? "17px" : "18px",
                         fontWeight: 500,
-                        lineHeight: 1.3,
+                        lineHeight: 1.32,
                         color: ink,
                         margin: "0 0 10px",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
                       }}
                     >
                       {post.title}

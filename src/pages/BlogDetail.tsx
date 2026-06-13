@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import useResponsive from "../hooks/useResponsive";
-import ReactMarkdown from "react-markdown";
+import DOMPurify from "dompurify";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { erpnextPublicOrigin } from "../config/erpnextPublic";
@@ -15,7 +15,8 @@ type BlogPost = {
   published_on?: string;
   featured?: boolean;
   blog_intro?: string;
-  content_md?: string;
+  /** Rich text (HTML) from ERPNext */
+  content?: string;
   meta_title?: string;
   meta_description?: string;
   meta_image?: string;
@@ -111,156 +112,11 @@ export default function BlogDetail() {
     return `${erpnextPublicOrigin}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
   };
 
-  const mdComponents = {
-    h1: ({ ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-      <h1
-        style={{
-          fontFamily: '"Playfair Display", serif',
-          fontSize: isMobile ? "26px" : "30px",
-          marginTop: "44px",
-          marginBottom: "20px",
-          color: "#1f241c",
-          fontWeight: 600,
-          lineHeight: 1.2,
-          textAlign: "start",
-        }}
-        {...props}
-      />
-    ),
-    h2: ({ ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-      <h2
-        style={{
-          fontFamily: '"Playfair Display", serif',
-          fontSize: isMobile ? "22px" : "26px",
-          marginTop: "38px",
-          marginBottom: "16px",
-          color: "#1f241c",
-          fontWeight: 600,
-          lineHeight: 1.25,
-          textAlign: "start",
-        }}
-        {...props}
-      />
-    ),
-    h3: ({ ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-      <h3
-        style={{
-          fontFamily: '"Playfair Display", serif',
-          fontSize: isMobile ? "18px" : "21px",
-          marginTop: "28px",
-          marginBottom: "12px",
-          color: "#1f241c",
-          fontWeight: 600,
-          lineHeight: 1.3,
-          textAlign: "start",
-        }}
-        {...props}
-      />
-    ),
-    p: ({ ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
-      <p
-        style={{
-          marginBottom: "1.15rem",
-          lineHeight: 1.78,
-          color: "#333",
-          textAlign: "justify",
-          hyphens: "auto",
-        }}
-        {...props}
-      />
-    ),
-    ul: ({ ...props }: React.HTMLAttributes<HTMLUListElement>) => (
-      <ul
-        style={{
-          marginLeft: "1.35rem",
-          marginBottom: "1.15rem",
-          listStyle: "disc",
-          paddingLeft: "0.25rem",
-        }}
-        {...props}
-      />
-    ),
-    ol: ({ ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-      <ol
-        style={{
-          marginLeft: "1.35rem",
-          marginBottom: "1.15rem",
-          listStyle: "decimal",
-          paddingLeft: "0.25rem",
-        }}
-        {...props}
-      />
-    ),
-    li: ({ ...props }: React.HTMLAttributes<HTMLLIElement>) => (
-      <li
-        style={{
-          marginBottom: "0.45rem",
-          color: "#2a2a2a",
-          lineHeight: 1.65,
-          textAlign: "justify",
-          hyphens: "auto",
-        }}
-        {...props}
-      />
-    ),
-    blockquote: ({ ...props }: React.HTMLAttributes<HTMLQuoteElement>) => (
-      <blockquote
-        style={{
-          borderLeft: `3px solid ${ink}`,
-          paddingLeft: "1.15rem",
-          margin: "1.5rem 0",
-          color: "#444",
-          fontStyle: "italic",
-          textAlign: "justify",
-          hyphens: "auto",
-        }}
-        {...props}
-      />
-    ),
-    code: ({ ...props }: React.HTMLAttributes<HTMLElement>) => (
-      <code
-        style={{
-          background: "#ebe8e1",
-          padding: "0.15em 0.4em",
-          borderRadius: "4px",
-          fontFamily: "ui-monospace, monospace",
-          fontSize: "0.88em",
-          color: "#3d3d3d",
-        }}
-        {...props}
-      />
-    ),
-    pre: ({ ...props }: React.HTMLAttributes<HTMLPreElement>) => (
-      <pre
-        style={{
-          background: "#1a1f18",
-          color: "#e8ebe6",
-          padding: "1.1rem 1.25rem",
-          borderRadius: "6px",
-          overflow: "auto",
-          marginBottom: "1.25rem",
-          fontFamily: "ui-monospace, monospace",
-          fontSize: "13px",
-          lineHeight: 1.55,
-        }}
-        {...props}
-      />
-    ),
-    a: ({ ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-      <a
-        style={{
-          color: ink,
-          textDecoration: "underline",
-          textUnderlineOffset: "3px",
-          textDecorationThickness: "1px",
-        }}
-        {...props}
-      />
-    ),
-    img: ({ ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-      <img {...props} style={{ maxWidth: "100%", height: "auto", ...props.style }} alt={props.alt ?? ""} />
-    ),
-  };
+  const safeBodyHtml = useMemo(() => {
+    const raw = post?.content?.trim();
+    if (!raw) return "";
+    return DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
+  }, [post?.content]);
 
   if (loading) {
     return (
@@ -426,9 +282,9 @@ export default function BlogDetail() {
             padding: isMobile ? "0 20px 80px" : "0 40px 100px",
           }}
         >
-          {post.content_md ? (
+          {safeBodyHtml ? (
             <div
-              className="blog-content blog-prose"
+              className="blog-content blog-prose blog-prose--html"
               style={{
                 fontSize: isMobile ? "16px" : "17px",
                 lineHeight: 1.78,
@@ -436,9 +292,8 @@ export default function BlogDetail() {
                 wordBreak: "break-word",
                 hyphens: "auto",
               }}
-            >
-              <ReactMarkdown components={mdComponents}>{post.content_md}</ReactMarkdown>
-            </div>
+              dangerouslySetInnerHTML={{ __html: safeBodyHtml }}
+            />
           ) : (
             <p style={{ color: muted }}>No article body for this post.</p>
           )}

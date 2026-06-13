@@ -1,4 +1,5 @@
 import { makeERPNextRequest } from "./erpnextAuth.js";
+import { isEmailSubscribed, subscribeEmailToNewsletter } from "./newsletterStore.js";
 
 /**
  * Website pre-order form → ERPNext **Pre-Order** (or custom) DocType.
@@ -12,6 +13,10 @@ import { makeERPNextRequest } from "./erpnextAuth.js";
  * - `ERPNEXT_PREORDER_PHONE_FIELD` (default `phone_number`) — Data / Phone
  * - `ERPNEXT_PREORDER_NAMING_SERIES` — if your doctype uses naming series
  * - `ERPNEXT_PREORDER_RESPECT_PERMISSIONS=1` — omit `ignore_permissions` on POST
+ *
+ * After a successful Pre-Order insert, the submitter’s **email** is added to **Subscribers**
+ * (newsletter) if not already present — same best-effort pattern as the free book gift flow;
+ * failures are logged and do not fail the pre-order response.
  */
 const DOCTYPE = (process.env.ERPNEXT_PREORDER_DOCTYPE || "Pre-Order").trim();
 const FIELD_BOOK = (process.env.ERPNEXT_PREORDER_BOOK_FIELD || "book").trim();
@@ -115,6 +120,25 @@ export async function submitBookPreorder(
       JSON.stringify(result).slice(0, 800)
     );
     throw new Error("erpnext_create_no_name");
+  }
+
+  try {
+    const alreadySubscribed = await isEmailSubscribed(email);
+    if (alreadySubscribed) {
+      console.log(
+        "[preorderStore] Newsletter: email already on subscriber list, skip add",
+      );
+    } else {
+      await subscribeEmailToNewsletter(email);
+      console.log(
+        "[preorderStore] Newsletter: ensured Subscribers row after pre-order",
+      );
+    }
+  } catch (err) {
+    console.warn(
+      "[preorderStore] Newsletter subscribe after Pre-Order failed:",
+      err,
+    );
   }
 
   return { docName };

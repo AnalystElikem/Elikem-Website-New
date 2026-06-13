@@ -182,7 +182,7 @@ Response: binary stream (`Content-Type` from upstream, usually `application/pdf`
 
 #### Submit a pre-order (creates **Pre-Order** in ERPNext)
 
-Requires the **Books** row to have `is_preorder` set. Body sends the Books document **`name`** as `book` (not the display title).
+Requires the **Books** row to have `is_preorder` set. Body sends the Books document **`name`** as `book` (not the display title). On success, the **`email`** is added to the newsletter **Subscribers** list in ERPNext if that address is not already subscribed (best-effort; pre-order still succeeds if this step fails).
 
 ```
 POST /api/books/preorder

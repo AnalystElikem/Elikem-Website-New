@@ -156,18 +156,20 @@ export async function listERPNextDocuments<T = any>(
 ): Promise<{ data: T[] }> {
   let endpoint = `/${doctype}?`;
 
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
+  if (filters && Object.keys(filters).length > 0) {
+    const filterTuples: unknown[][] = [];
+    for (const [key, value] of Object.entries(filters)) {
       if (Array.isArray(value)) {
-        endpoint += `filters=[["${key}","${value[0]}","${value[1]}"]]&`;
+        filterTuples.push([key, value[0], value[1]]);
       } else {
-        endpoint += `filters=[["${key}","=","${value}"]]&`;
+        filterTuples.push([key, "=", value]);
       }
-    });
+    }
+    endpoint += `filters=${encodeURIComponent(JSON.stringify(filterTuples))}&`;
   }
 
   if (fields && fields.length > 0) {
-    endpoint += `fields=["${fields.join('","')}"]&`;
+    endpoint += `fields=${encodeURIComponent(JSON.stringify(fields))}&`;
   }
 
   if (listOptions?.orderBy) {

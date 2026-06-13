@@ -571,7 +571,14 @@ html {
   }
 }
 
-/* —— Blog article markdown —— */
+/* —— Blog article body (markdown or ERPNext rich text) —— */
+.blog-prose--html .ql-editor {
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
 .blog-prose img {
   border-radius: 4px;
   margin: 1.25rem 0;
@@ -599,8 +606,8 @@ html {
   hyphens: auto;
 }
 
-/* Article body: justified prose (headings stay start-aligned) */
-article .blog-content.blog-prose :where(p, li, blockquote) {
+/* Article body: justified prose for markdown-era posts; rich HTML uses editor styles */
+article .blog-content.blog-prose:not(.blog-prose--html) :where(p, li, blockquote) {
   text-align: justify;
   hyphens: auto;
 }

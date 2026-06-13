@@ -258,11 +258,15 @@ export default function LatestArticles() {
                 className="post-title"
                 style={{
                   fontFamily: "Playfair Display, serif",
-                  fontSize: isMobile ? "18px" : "22px",
+                  fontSize: isMobile ? "16px" : "17px",
                   color: "#4b5a45",
                   marginBottom: "8px",
-                  lineHeight: "1.4",
+                  lineHeight: 1.35,
                   transition: "transform 0.3s ease",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
                 }}
               >
                 {post.title}

@@ -67,6 +67,18 @@ async function subscriberExistsByEmail(normalized: string): Promise<boolean> {
   return Array.isArray(result.data) && result.data.length > 0;
 }
 
+function isLikelyDuplicateSubscriberError(err: unknown): boolean {
+  const msg =
+    err instanceof Error
+      ? `${err.name} ${err.message}`
+      : typeof err === "string"
+        ? err
+        : JSON.stringify(err);
+  return /DuplicateEntry|duplicate entry|UniqueViolation|already exists|Duplicate/i.test(
+    msg,
+  );
+}
+
 /**
  * Subscribe an email to the newsletter
  */
@@ -76,19 +88,25 @@ export async function subscribeEmailToNewsletter(email: string): Promise<void> {
 
   try {
     if (await subscriberExistsByEmail(normalized)) {
+      if (cachedSubscribedEmails) {
+        cachedSubscribedEmails.add(normalized);
+      }
       return;
     }
 
-    // Create new subscriber
     await createERPNextDocument("Subscribers", {
       email: normalized,
       docstatus: 0,
     });
 
-    // Invalidate cache
     cachedSubscribedEmails = null;
     cachedAtMs = 0;
   } catch (error) {
+    if (isLikelyDuplicateSubscriberError(error)) {
+      cachedSubscribedEmails = null;
+      cachedAtMs = 0;
+      return;
+    }
     console.error("Failed to subscribe email to newsletter:", error);
     throw error;
   }
