@@ -40,6 +40,18 @@ function formatDate(dateString?: string) {
   });
 }
 
+/** ERPNext `blog_intro` may be HTML; normalize to plain text for card previews. */
+function blogIntroToPreviewPlain(intro: string | undefined): string {
+  const raw = (intro || "").trim();
+  if (!raw) return "";
+  if (typeof document === "undefined") {
+    return raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  }
+  const d = document.createElement("div");
+  d.innerHTML = raw;
+  return (d.textContent || "").replace(/\s+/g, " ").trim();
+}
+
 export default function LatestArticles() {
   const { isMobile } = useResponsive();
   const [posts, setPosts] = useState<CardPost[]>([]);
@@ -59,7 +71,8 @@ export default function LatestArticles() {
             title: p.title || p.name,
             category: p.blog_category || "Blog",
             date: formatDate(p.published_on) || "Recent",
-            excerpt: (p.blog_intro || "").trim() || "Read more on the blog.",
+            excerpt:
+              blogIntroToPreviewPlain(p.blog_intro) || "Read more on the blog.",
             image: img || "",
           };
         });
@@ -244,11 +257,13 @@ export default function LatestArticles() {
 
               <p
                 style={{
+                  fontFamily: "Inter, sans-serif",
                   fontSize: "11px",
                   letterSpacing: "1px",
                   textTransform: "uppercase",
                   color: "#8a867d",
                   marginBottom: "6px",
+                  fontWeight: 500,
                 }}
               >
                 {post.category} • {post.date}
@@ -273,10 +288,13 @@ export default function LatestArticles() {
               </h3>
 
               <p
+                className="post-excerpt"
                 style={{
+                  fontFamily: "Inter, sans-serif",
                   fontSize: isMobile ? "14px" : "15px",
+                  fontWeight: 400,
                   color: "#6f6f6f",
-                  lineHeight: "1.6",
+                  lineHeight: 1.6,
                   textAlign: "justify",
                   hyphens: "auto",
                 }}
