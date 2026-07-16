@@ -40,7 +40,7 @@ function formatDate(dateString?: string) {
   });
 }
 
-/** ERPNext `blog_intro` may be HTML; normalize to plain text for card previews. */
+/** Homepage “Latest Thoughts” cards only. Does not alter article `content` or BlogDetail. */
 function blogIntroToPreviewPlain(intro: string | undefined): string {
   const raw = (intro || "").trim();
   if (!raw) return "";
@@ -108,6 +108,7 @@ export default function LatestArticles() {
 
   return (
     <div
+      className="home-latest-articles"
       style={{
         padding: isMobile ? "80px 20px" : "100px 40px",
         background: "#f5f2eb",
@@ -256,6 +257,7 @@ export default function LatestArticles() {
               </div>
 
               <p
+                className="home-latest-card-meta"
                 style={{
                   fontFamily: "Inter, sans-serif",
                   fontSize: "11px",
@@ -288,7 +290,7 @@ export default function LatestArticles() {
               </h3>
 
               <p
-                className="post-excerpt"
+                className="home-latest-card-excerpt"
                 style={{
                   fontFamily: "Inter, sans-serif",
                   fontSize: isMobile ? "14px" : "15px",

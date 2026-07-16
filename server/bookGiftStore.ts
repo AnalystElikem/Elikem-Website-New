@@ -4,13 +4,22 @@ import { subscribeEmailToNewsletter } from "./newsletterStore.js";
 
 const DOCTYPE = (process.env.ERPNEXT_BOOK_GIFT_DOCTYPE || "Book Gift").trim();
 /**
- * Book Gift field used for the **Books** reference when `ERPNEXT_BOOK_GIFT_BOOK_PDF_URL_FIELD` is set
- * (Frappe **Link** fields only store the target doc `name`, e.g. `3fo2r11mf8`).
- * When the PDF env is unset, this field receives the **full PDF URL** (use a **Data / Small Text** field in ERPNext, not Link).
+ * PDF / file URL field (**Data / Small Text / Attach**, not Link).
+ * Override: `ERPNEXT_BOOK_GIFT_BOOK_LINK_FIELD` (default `book_link`).
  */
 const FIELD_BOOK_LINK =
   (process.env.ERPNEXT_BOOK_GIFT_BOOK_LINK_FIELD || "book_link").trim();
-/** If set (e.g. `book_pdf_url`), POST the full PDF URL here and POST `book.id` to `FIELD_BOOK_LINK` for a Link field. */
+/**
+ * **Link** to the **Books** DocType (label *Book Name* → `book_name`).
+ * Must receive the Books document `name` (e.g. `cbdi2kd5g4`), never the display title.
+ * Override: `ERPNEXT_BOOK_GIFT_BOOK_NAME_FIELD`.
+ */
+const FIELD_BOOK_NAME =
+  (process.env.ERPNEXT_BOOK_GIFT_BOOK_NAME_FIELD || "book_name").trim();
+/**
+ * Optional second URL field. If set and different from `FIELD_BOOK_LINK`, the PDF goes here
+ * and `FIELD_BOOK_LINK` is unused for the PDF (Link book name still uses `FIELD_BOOK_NAME`).
+ */
 const FIELD_BOOK_PDF_URL =
   process.env.ERPNEXT_BOOK_GIFT_BOOK_PDF_URL_FIELD?.trim() || "";
 const FIELD_EMAIL =
@@ -40,7 +49,7 @@ function extractCreatedDocName(result: unknown): string {
 }
 
 /**
- * Create a **Book Gift** row (book PDF URL + email) for the current featured Books doc,
+ * Create a **Book Gift** row (Books Link + PDF URL + email) for the current featured Books doc,
  * then add the address to the newsletter list (best-effort).
  */
 export async function submitFreeGiftSignup(
@@ -72,20 +81,25 @@ export async function submitFreeGiftSignup(
     body.naming_series = NAMING_SERIES;
   }
 
-  if (FIELD_BOOK_PDF_URL && FIELD_BOOK_PDF_URL !== FIELD_BOOK_LINK) {
-    body[FIELD_BOOK_LINK] = book.id;
-    body[FIELD_BOOK_PDF_URL] = bookPdfUrl;
-  } else {
-    body[FIELD_BOOK_LINK] = bookPdfUrl;
+  // Link field → Books document name (not display title like "Build")
+  if (FIELD_BOOK_NAME) {
+    body[FIELD_BOOK_NAME] = book.id;
+  }
+
+  const pdfField =
+    FIELD_BOOK_PDF_URL && FIELD_BOOK_PDF_URL !== FIELD_BOOK_LINK
+      ? FIELD_BOOK_PDF_URL
+      : FIELD_BOOK_LINK;
+  if (pdfField && pdfField !== FIELD_BOOK_NAME) {
+    body[pdfField] = bookPdfUrl;
   }
 
   console.log("[bookGiftStore] Book Gift POST fields:", {
-    bookLinkField: FIELD_BOOK_LINK,
-    bookLinkValuePreview:
-      FIELD_BOOK_PDF_URL && FIELD_BOOK_PDF_URL !== FIELD_BOOK_LINK
-        ? `(Books name) ${String(book.id).slice(0, 24)}`
-        : `(PDF URL) ${bookPdfUrl.slice(0, 72)}${bookPdfUrl.length > 72 ? "…" : ""}`,
-    pdfUrlField: FIELD_BOOK_PDF_URL || "(same as book link field — use Data/Small Text, not Link)",
+    bookNameField: FIELD_BOOK_NAME,
+    bookNameValue: `(Books Link) ${book.id}`,
+    bookDisplayTitle: book.bookName || "(empty)",
+    pdfField,
+    pdfUrlPreview: `${bookPdfUrl.slice(0, 72)}${bookPdfUrl.length > 72 ? "…" : ""}`,
   });
 
   const result = await makeERPNextRequest(`/${encodeURIComponent(DOCTYPE)}`, {
