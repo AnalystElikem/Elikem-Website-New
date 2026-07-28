@@ -3,6 +3,11 @@ import {
   createERPNextDocument,
 } from "./erpnextAuth.js";
 
+const EMAIL_GROUP_NAME =
+  (process.env.ERPNEXT_NEWSLETTER_EMAIL_GROUP || "Website Subscribers").trim();
+const EMAIL_GROUP_MEMBER_DOCTYPE =
+  (process.env.ERPNEXT_EMAIL_GROUP_MEMBER_DOCTYPE || "Email Group Member").trim();
+
 let cachedSubscribedEmails: Set<string> | null = null;
 let cachedAtMs = 0;
 
@@ -79,6 +84,34 @@ function isLikelyDuplicateSubscriberError(err: unknown): boolean {
   );
 }
 
+async function emailGroupMemberExists(normalized: string): Promise<boolean> {
+  const result = await listERPNextDocuments(
+    EMAIL_GROUP_MEMBER_DOCTYPE,
+    { email_group: EMAIL_GROUP_NAME, email: normalized },
+    ["name"],
+    { limit: 1 }
+  );
+  return Array.isArray(result.data) && result.data.length > 0;
+}
+
+/**
+ * Add the address to the ERPNext **Email Group** (default: Website Subscribers).
+ * Runs after the **Subscribers** document is created.
+ */
+async function addEmailToNewsletterGroup(normalized: string): Promise<void> {
+  if (!EMAIL_GROUP_NAME) return;
+
+  if (await emailGroupMemberExists(normalized)) {
+    return;
+  }
+
+  await createERPNextDocument(EMAIL_GROUP_MEMBER_DOCTYPE, {
+    email_group: EMAIL_GROUP_NAME,
+    email: normalized,
+    docstatus: 0,
+  });
+}
+
 /**
  * Subscribe an email to the newsletter
  */
@@ -87,20 +120,23 @@ export async function subscribeEmailToNewsletter(email: string): Promise<void> {
   if (!normalized) return;
 
   try {
-    if (await subscriberExistsByEmail(normalized)) {
-      if (cachedSubscribedEmails) {
-        cachedSubscribedEmails.add(normalized);
-      }
-      return;
+    const alreadySubscribed = await subscriberExistsByEmail(normalized);
+
+    if (!alreadySubscribed) {
+      await createERPNextDocument("Subscribers", {
+        email: normalized,
+        docstatus: 0,
+      });
     }
 
-    await createERPNextDocument("Subscribers", {
-      email: normalized,
-      docstatus: 0,
-    });
+    await addEmailToNewsletterGroup(normalized);
 
-    cachedSubscribedEmails = null;
-    cachedAtMs = 0;
+    if (cachedSubscribedEmails) {
+      cachedSubscribedEmails.add(normalized);
+    } else {
+      cachedSubscribedEmails = null;
+      cachedAtMs = 0;
+    }
   } catch (error) {
     if (isLikelyDuplicateSubscriberError(error)) {
       cachedSubscribedEmails = null;
