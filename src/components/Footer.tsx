@@ -7,27 +7,46 @@ export default function Footer() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+
+  // Spam guards: a hidden field people never see, and how long the form has been on screen.
+  const [website, setWebsite] = useState(""); // honeypot — must stay empty
+  const [formRenderedAt] = useState(() => Date.now());
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    setIsError(false);
 
     try {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website, formRenderedAt }),
       });
 
       if (res.ok) {
         setMessage("Successfully subscribed! Check your email.");
         setEmail("");
       } else {
-        await res.json().catch(() => null);
-        setMessage("Subscription failed. Please try again.");
+        const err = await res.json().catch(() => ({}));
+        const reason = (err as { reason?: string }).reason;
+        setIsError(true);
+        if (
+          reason === "invalid_email" ||
+          reason === "undeliverable_domain" ||
+          reason === "disposable_email"
+        ) {
+          setMessage("That email address doesn’t look deliverable. Mind checking it?");
+        } else if (reason === "too_many_requests") {
+          setMessage("Too many attempts just now. Please try again shortly.");
+        } else {
+          setMessage("Subscription failed. Please try again.");
+        }
       }
     } catch (error) {
+      setIsError(true);
       setMessage("Error subscribing. Please try again.");
       console.error(error);
     } finally {
@@ -94,6 +113,7 @@ export default function Footer() {
           <form
             onSubmit={handleSubscribe}
             style={{
+              position: "relative",
               display: "flex",
               flexDirection: isMobile ? "column" : "row",
               gap: "10px",
@@ -101,6 +121,24 @@ export default function Footer() {
               maxWidth: "480px",
             }}
           >
+            {/* Honeypot: invisible to people, irresistible to bots */}
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: "-9999px",
+                width: "1px",
+                height: "1px",
+                opacity: 0,
+              }}
+            />
+
             <input
               type="email"
               placeholder="Enter your email"
@@ -147,7 +185,7 @@ export default function Footer() {
               style={{
                 marginTop: "10px",
                 fontSize: "13px",
-                color: message.includes("failed") ? "#ff6b6b" : "#51cf66",
+                color: isError ? "#ff6b6b" : "#51cf66",
                 fontFamily: "Inter, sans-serif",
               }}
             >
