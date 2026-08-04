@@ -1,3 +1,4 @@
+import { checkSignupRequest, clientIpFrom } from "./spamGuard.js";
 import type { Express } from "express";
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
@@ -58,14 +59,21 @@ export async function registerRoutes(
   router.post(
     "/newsletter/subscribe",
     asyncHandler(async (req: Request, res: Response): Promise<void> => {
-      const email = String(req.body?.email || "").trim().toLowerCase();
-      if (!email) {
-        res.status(400).json({ subscribed: false, reason: "missing_email" });
+      const ip = clientIpFrom(req.headers as Record<string, unknown>, req.ip);
+      const check = await checkSignupRequest(req.body?.email, req.body, ip);
+
+      if (!check.ok) {
+        // Honeypot hits get a normal-looking response so the bot learns nothing.
+        if (check.reason === "honeypot") {
+          res.json({ subscribed: true });
+          return;
+        }
+        res.status(check.status).json({ subscribed: false, reason: check.reason });
         return;
       }
 
-      await subscribeEmailToNewsletter(email);
-      res.json({ subscribed: await isEmailSubscribed(email) });
+      await subscribeEmailToNewsletter(check.email);
+      res.json({ subscribed: await isEmailSubscribed(check.email) });
     }),
   );
 
