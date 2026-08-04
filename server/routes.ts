@@ -237,6 +237,12 @@ export async function registerRoutes(
         res.status(400).json({ ok: false, reason: "missing_email" });
         return;
       }
+      const ip = clientIpFrom(req.headers as Record<string, unknown>, req.ip);
+      const preorderCheck = await checkSignupRequest(email, req.body, ip);
+      if (!preorderCheck.ok && preorderCheck.reason !== "honeypot") {
+        res.status(preorderCheck.status).json({ ok: false, reason: preorderCheck.reason });
+        return;
+      }
       if (!fullName) {
         res.status(400).json({ ok: false, reason: "missing_full_name" });
         return;
@@ -313,11 +319,17 @@ export async function registerRoutes(
   router.post(
     "/books/gift-signup",
     asyncHandler(async (req: Request, res: Response): Promise<void> => {
-      const email = String(req.body?.email || "").trim();
-      if (!email) {
-        res.status(400).json({ ok: false, reason: "missing_email" });
+      const ip = clientIpFrom(req.headers as Record<string, unknown>, req.ip);
+      const check = await checkSignupRequest(req.body?.email, req.body, ip);
+      if (!check.ok) {
+        if (check.reason === "honeypot") {
+          res.json({ ok: true, giftName: "" });
+          return;
+        }
+        res.status(check.status).json({ ok: false, reason: check.reason });
         return;
       }
+      const email = check.email;
       try {
         const { giftName } = await submitFreeGiftSignup(email);
         res.json({ ok: true, giftName });
