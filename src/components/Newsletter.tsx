@@ -87,7 +87,12 @@ export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
   const [giftBook, setGiftBook] = useState<GiftBook | null | undefined>(undefined);
+
+  // Spam guards: a hidden field people never see, and how long the form has been on screen.
+  const [website, setWebsite] = useState(""); // honeypot — must stay empty
+  const [formRenderedAt] = useState(() => Date.now());
 
   useEffect(() => {
     let cancelled = false;
@@ -114,12 +119,13 @@ export default function Newsletter() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    setIsError(false);
 
     try {
       const res = await fetch("/api/books/gift-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website, formRenderedAt }),
       });
 
       if (res.ok) {
@@ -128,13 +134,23 @@ export default function Newsletter() {
       } else {
         const err = await res.json().catch(() => ({}));
         const reason = (err as { reason?: string }).reason;
+        setIsError(true);
         if (reason === "no_book") {
           setMessage("This offer isn’t available right now. Please try again later.");
+        } else if (
+          reason === "invalid_email" ||
+          reason === "undeliverable_domain" ||
+          reason === "disposable_email"
+        ) {
+          setMessage("That email address doesn’t look deliverable. Mind checking it?");
+        } else if (reason === "too_many_requests") {
+          setMessage("Too many attempts just now. Please try again shortly.");
         } else {
           setMessage("Something went wrong. Please try again.");
         }
       }
     } catch {
+      setIsError(true);
       setMessage("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -277,6 +293,7 @@ export default function Newsletter() {
           <form
             onSubmit={handleSubmit}
             style={{
+              position: "relative",
               display: "flex",
               flexDirection: isMobile ? "column" : "row",
               gap: isMobile ? "14px" : "12px",
@@ -285,6 +302,24 @@ export default function Newsletter() {
               alignItems: isMobile ? "stretch" : "center",
             }}
           >
+            {/* Honeypot: invisible to people, irresistible to bots */}
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: "-9999px",
+                width: "1px",
+                height: "1px",
+                opacity: 0,
+              }}
+            />
+
             <input
               type="email"
               placeholder="Enter your email"
@@ -351,7 +386,7 @@ export default function Newsletter() {
               style={{
                 marginTop: "14px",
                 fontSize: "14px",
-                color: message.includes("wrong") ? "#ffd0d0" : "#d8f5dc",
+                color: isError ? "#ffd0d0" : "#d8f5dc",
                 fontFamily: "Inter, sans-serif",
               }}
             >
