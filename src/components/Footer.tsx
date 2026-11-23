@@ -262,9 +262,22 @@ export default function Footer() {
         </div>
       </div>
 
+      <p
+        style={{
+          margin: "48px 0 0",
+          textAlign: "center",
+          fontFamily: "Playfair Display, serif",
+          fontSize: isMobile ? "16px" : "20px",
+          lineHeight: 1.7,
+          opacity: 0.8,
+        }}
+      >
+        Faith at the Core. Insight in the Lead. Impact as the Legacy.
+      </p>
+
       <div
         style={{
-          marginTop: "48px",
+          marginTop: "28px",
           height: "1px",
           background: "rgba(255,255,255,0.1)",
         }}

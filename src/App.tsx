@@ -33,6 +33,9 @@ function ScrollToTop() {
   return null;
 }
 
+// Set to true to bring the original first hero (name, socials, tagline, "Start the Journey") back.
+const SHOW_HERO = false;
+
 // ✅ HOME PAGE COMPONENT
 function Home() {
   const location = useLocation();
@@ -58,13 +61,13 @@ function Home() {
     >
       <Navbar />
 
-      <div id="home">
-        <Hero />
-      </div>
+      <div id="home">{SHOW_HERO ? <Hero /> : <BrandReveal />}</div>
 
-      <div id="journey">
-        <BrandReveal />
-      </div>
+      {SHOW_HERO && (
+        <div id="journey">
+          <BrandReveal />
+        </div>
+      )}
 
       <div id="about">
         <AboutTeaser />
