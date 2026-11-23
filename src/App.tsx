@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import BrandReveal from "./components/BrandReveal";
 import AboutTeaser from "./components/AboutTeaser";
 import Expertise from "./components/Expertise";
 import LatestArticles from "./components/LatestArticles";
@@ -59,6 +60,10 @@ function Home() {
 
       <div id="home">
         <Hero />
+      </div>
+
+      <div id="journey">
+        <BrandReveal />
       </div>
 
       <div id="about">
