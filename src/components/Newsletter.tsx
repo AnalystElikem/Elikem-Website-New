@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import useResponsive from "../hooks/useResponsive";
 import bookCoverFallback from "../assets/build-cover.png";
+import Tilt from "./Tilt";
 
 type GiftBook = {
   bookName: string;
@@ -214,6 +215,21 @@ export default function Newsletter() {
               rel="noopener noreferrer"
               style={{ lineHeight: 0 }}
             >
+              <Tilt max={14} scale={1.04}>
+                <img
+                  src={coverSrc}
+                  alt=""
+                  style={{
+                    width: isMobile ? "220px" : "350px",
+                    display: "block",
+                    filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.18))",
+                    background: "transparent",
+                  }}
+                />
+              </Tilt>
+            </a>
+          ) : (
+            <Tilt max={14} scale={1.04}>
               <img
                 src={coverSrc}
                 alt=""
@@ -224,18 +240,7 @@ export default function Newsletter() {
                   background: "transparent",
                 }}
               />
-            </a>
-          ) : (
-            <img
-              src={coverSrc}
-              alt=""
-              style={{
-                width: isMobile ? "220px" : "350px",
-                display: "block",
-                filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.18))",
-                background: "transparent",
-              }}
-            />
+            </Tilt>
           )}
         </div>
 

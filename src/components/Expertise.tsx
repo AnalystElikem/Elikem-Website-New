@@ -1,9 +1,11 @@
 import useResponsive from "../hooks/useResponsive";
 
-// ✅ IMPORT IMAGES
-import pastorIcon from "../assets/ea-pastor-icon.png";
-import analystIcon from "../assets/ea-dataanalyst-icon.png";
-import writerIcon from "../assets/ea-writer-icon.png";
+import Tilt from "./Tilt";
+
+// Each role gets its own piece of the EA logo: halo (Pastor), graph (Data Analyst), book (Writer)
+import pastorIcon from "../assets/logo-pieces/top-pastor.png";
+import analystIcon from "../assets/logo-pieces/top-data.png";
+import writerIcon from "../assets/logo-pieces/top-writer.png";
 
 export default function Expertise() {
   const { isMobile } = useResponsive();
@@ -70,35 +72,26 @@ export default function Expertise() {
         }}
       >
         {items.map((item) => (
-          <div
-            key={item.title}
-            id={item.sectionId}
+          <Tilt key={item.title} id={item.sectionId} max={7} scale={1.02}
             style={{
-              background: "#ffffff",
-              padding: isMobile ? "30px 20px" : "40px 30px",
-              borderRadius: "6px",
-              border: "1px solid transparent",
-              textAlign: "center",
-              transition: "box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = "0 8px 28px rgba(0,0,0,0.06)";
-              e.currentTarget.style.borderColor = "#e0dcd2";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = "none";
-              e.currentTarget.style.borderColor = "transparent";
+              background: "linear-gradient(145deg, #ecece6 0%, #fbfaf6 70%)",
+              padding: isMobile ? "30px 24px" : "40px 32px",
+              borderRadius: "18px",
+              textAlign: "left",
+              boxShadow: "0 18px 40px rgba(60,66,52,0.10), 0 2px 6px rgba(60,66,52,0.05)",
             }}
           >
             <img
               src={item.icon}
-              alt={item.title}
+              alt=""
+              aria-hidden="true"
               style={{
-                width: isMobile ? "75px" : "100px",
-                marginBottom: "8px",
-                display: "block",        // ✅ ensures proper centering behaviour
-                marginLeft: "auto",      // ✅ centers horizontally
-                marginRight: "auto",
+                width: isMobile ? "130px" : "150px",
+                display: "block",
+                marginBottom: "18px",
+                transition: "transform 0.35s ease, filter 0.35s ease",
+                transform: "translateZ(calc(var(--lift) * 48px)) translateY(calc(var(--lift) * -8px))",
+                filter: "drop-shadow(0 calc(var(--lift) * 14px) calc(var(--lift) * 12px) rgba(60,66,52,0.22))",
               }}
             />
 
@@ -120,12 +113,11 @@ export default function Expertise() {
                 fontWeight: 300,
                 color: "#6f6f6f",
                 lineHeight: "1.7",
-                textAlign: "center",
               }}
             >
               {item.text}
             </p>
-          </div>
+          </Tilt>
         ))}
       </div>
     </div>
